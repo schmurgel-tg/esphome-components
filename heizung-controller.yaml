@@ -1,10 +1,10 @@
 esphome:
   name: heizung-controller
 
-esp32:  
-  board: az-delivery-devkit-v4  
+esp32:
+  board: az-delivery-devkit-v4
   framework:
-    type: arduino    
+    type: arduino
 
 ota:
   platform: esphome
@@ -34,38 +34,25 @@ uart:
     data_bits: 7
     parity: EVEN
     stop_bits: 1
-  
 
 wr3223:
-  id: wr3223_component
   uart_id: uart_bus
-  sensor_polling_intervall: 5s    
 
 # Temperatur-Sensoren
 sensor:
-  - platform: wr3223    
-    command: "T1"
-    name: "Verdampfertemperatur"
-
-  - platform: wr3223    
-    command: "T2"
-    name: "Kondensatortemperatur"
-
-  - platform: wr3223    
-    command: "T3"
-    name: "Außentemperatur"
-
-  - platform: wr3223    
-    command: "T5"
-    name: "Nach Wärmetauscher (Fortluft)"
-
-  - platform: wr3223    
-    command: "T6"
-    name: "Zulufttemperatur"
-
-  - platform: wr3223    
-    command: "T8"
-    name: "Nach Vorheizregister"
-
+  - platform: wr3223
+    sensors:
+      - command: "T1"
+        name: "Verdampfertemperatur"
+      - command: "T2"
+        name: "Kondensatortemperatur"
+      - command: "T3"
+        name: "Außentemperatur"
+      - command: "T5"
+        name: "Nach Wärmetauscher (Fortluft)"
+      - command: "T6"
+        name: "Zulufttemperatur"
+      - command: "T8"
+        name: "Nach Vorheizregister"
 #binary_sensor:
 #text_sensor:
