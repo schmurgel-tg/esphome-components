@@ -1,4 +1,4 @@
-#include "wr3223_sensor_polling.h"
+#include "polling/wr3223_sensor_polling.h"
 #include "esphome/core/log.h"
 
 namespace esphome {

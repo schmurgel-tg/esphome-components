@@ -66,3 +66,6 @@ sensor:
   - platform: wr3223    
     command: "T8"
     name: "Nach Vorheizregister"
+
+#binary_sensor:
+#text_sensor:

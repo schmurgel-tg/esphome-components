@@ -2,8 +2,8 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
-#include "wr3223_types.h"
-#include "wr3223.h" 
+#include "../wr3223_types.h"
+#include "../wr3223.h" 
 #include <vector>
 
 namespace esphome {
