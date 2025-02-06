@@ -61,3 +61,7 @@ Thumbs.db
 
 # ❌ Git-spezifische Dateien (falls du Submodule nutzt)
 .gitmodules
+
+# ❌ ESPHome Cache- und Speicherdateien
+.esphome/
+.esphome/*

@@ -3,12 +3,11 @@
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 #include "wr3223_types.h"
+#include "wr3223.h" 
 #include <vector>
 
 namespace esphome {
 namespace wr3223 {
-
-class WR3223; // ⬅ Vorwärtsdeklaration, KEIN `#include "wr3223.h"`
 
 class WR3223SensorPollingComponent : public PollingComponent {
  public:
