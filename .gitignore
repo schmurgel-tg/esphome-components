@@ -30,3 +30,34 @@
 *.exe
 *.out
 *.app
+
+
+secrets.yaml
+
+# ❌ Python-Cache-Dateien (automatisch generiert)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ❌ PlatformIO & ESPHome Build-Dateien
+.pio/
+build/
+*.elf
+*.bin
+*.map
+
+# ❌ ESPHome Log- und Debug-Dateien
+logs/
+esphome-flasher.log
+
+# ❌ VS Code Arbeitsdateien
+.vscode/
+*.code-workspace
+
+# ❌ macOS & Windows System-Dateien
+.DS_Store
+Thumbs.db
+
+# ❌ Git-spezifische Dateien (falls du Submodule nutzt)
+.gitmodules

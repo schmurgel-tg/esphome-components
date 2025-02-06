@@ -1,0 +1,68 @@
+esphome:
+  name: heizung-controller
+
+esp32:  
+  board: az-delivery-devkit-v4  
+  framework:
+    type: arduino    
+
+ota:
+  platform: esphome
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Optional: Falls dein WLAN dynamische IPs vergibt, kannst du eine statische setzen:
+  manual_ip:
+    static_ip: 192.168.178.199
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+logger:
+  level: DEBUG
+
+external_components:
+  - source: "./components"
+    components: [wr3223]
+
+uart:
+  - id: uart_bus
+    tx_pin: GPIO19
+    rx_pin: GPIO18
+    baud_rate: 9600
+    data_bits: 7
+    parity: EVEN
+    stop_bits: 1
+  
+
+wr3223:
+  id: wr3223_component
+  uart_id: uart_bus
+  sensor_polling_intervall: 5s    
+
+# Temperatur-Sensoren
+sensor:
+  - platform: wr3223    
+    command: "T1"
+    name: "Verdampfertemperatur"
+
+  - platform: wr3223    
+    command: "T2"
+    name: "Kondensatortemperatur"
+
+  - platform: wr3223    
+    command: "T3"
+    name: "Außentemperatur"
+
+  - platform: wr3223    
+    command: "T5"
+    name: "Nach Wärmetauscher (Fortluft)"
+
+  - platform: wr3223    
+    command: "T6"
+    name: "Zulufttemperatur"
+
+  - platform: wr3223    
+    command: "T8"
+    name: "Nach Vorheizregister"
