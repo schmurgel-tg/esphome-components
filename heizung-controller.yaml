@@ -46,6 +46,7 @@ sensor:
         name: "Verdampfertemperatur"
       - command: "T2"
         name: "Kondensatortemperatur"
+        update_interval: 15s
       - command: "T3"
         name: "Außentemperatur"
       - command: "T5"

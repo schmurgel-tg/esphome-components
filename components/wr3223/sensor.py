@@ -41,6 +41,13 @@ SENSOR_COMMANDS = {
 CONF_COMMAND = "command"
 CONF_SENSOR_POLLING_COMPONENT_ID = "polling_component_id"
 
+def validate_command(value):
+    value = cv.string(value)
+    if value in SENSOR_COMMANDS:  # Falls es ein bekanntes Kommando ist, ist alles gut
+        return value
+    if len(value) != 2:  # Falls es ein benutzerdefiniertes Kommando ist, prüfen wir die Länge
+        raise cv.Invalid("Custom command must be exactly two characters long.")
+    return value
 
 # **Definition der einzelnen Temperatur-Sensoren**
 CONFIG_SCHEMA = cv.Schema(
@@ -49,7 +56,8 @@ CONFIG_SCHEMA = cv.Schema(
     cv.Required(CONF_SENSORS): cv.ensure_list(
         cv.Schema({
             cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                    
-            cv.Required(CONF_COMMAND): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),
+            cv.Required(CONF_COMMAND): cv.enum(SENSOR_COMMANDS, lower=False, space=False, 
+                                               additional_validator=validate_command), 
             cv.Optional(CONF_NAME): cv.string,
             cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
             cv.Optional(CONF_DEVICE_CLASS): cv.string,
@@ -69,17 +77,24 @@ async def to_code(config):
         # **Das Kommando holen**
         command = sensor_config[CONF_COMMAND]
 
-        # **Standardwerte setzen**
-        default_name, default_unit, default_device_class = SENSOR_COMMANDS[command]
-
-        # Falls kein Name angegeben wurde, den Standardnamen aus `SENSOR_COMMANDS` verwenden
-        name = sensor_config.get(CONF_NAME, default_name)
-
-        # Falls `unit_of_measurement` nicht überschrieben wurde, Standardwert nehmen
-        unit = sensor_config.get(CONF_UNIT_OF_MEASUREMENT, default_unit)
-
-        # Falls `device_class` nicht überschrieben wurde, Standardwert nehmen
-        device_class = sensor_config.get(CONF_DEVICE_CLASS, default_device_class)
+        if command in SENSOR_COMMANDS:
+            # **Standardwerte setzen**, falls nciht überschrieben
+            default_name, default_unit, default_device_class = SENSOR_COMMANDS[command]
+            name = sensor_config.get(CONF_NAME, default_name)
+            unit = sensor_config.get(CONF_UNIT_OF_MEASUREMENT, default_unit)
+            device_class = sensor_config.get(CONF_DEVICE_CLASS, default_device_class)
+        else:
+             # Falls es ein benutzerdefiniertes Kommando ist, müssen diese Werte zwingend angegeben werden
+            if CONF_NAME not in sensor_config:
+                raise cv.Invalid(f"Custom command '{command}' requires a name.")
+            if CONF_UNIT_OF_MEASUREMENT not in sensor_config:
+                raise cv.Invalid(f"Custom command '{command}' requires a unit of measurement.")
+            if CONF_DEVICE_CLASS not in sensor_config:
+                raise cv.Invalid(f"Custom command '{command}' requires a device class.")
+            
+            name = sensor_config[CONF_NAME]
+            unit = sensor_config[CONF_UNIT_OF_MEASUREMENT]
+            device_class = sensor_config[CONF_DEVICE_CLASS]
 
         sens = await sensor.new_sensor(sensor_config)
         cg.add(sens.set_name(name))
