@@ -38,7 +38,7 @@ uart:
 wr3223:
   uart_id: uart_bus
 
-# Temperatur-Sensoren
+# Sensoren
 sensor:
   - platform: wr3223
     sensors:
@@ -53,7 +53,10 @@ sensor:
         name: "Nach Wärmetauscher (Fortluft)"
       - command: "T6"
         name: "Zulufttemperatur"
-      - command: "T8"
-        name: "Nach Vorheizregister"
+    sensors_custom:
+      - command: "XZ"
+        name: "Custom-Kommand"
+        unit_of_measurement: V
+        device_class: temperature
 #binary_sensor:
 #text_sensor:

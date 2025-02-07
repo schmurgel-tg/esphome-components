@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import uart
-from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL, CONF_UART_ID
+from esphome.const import CONF_UART_ID
 
 # ESPHome Namespace für WR3223
 wr3223_ns = cg.esphome_ns.namespace("wr3223")
