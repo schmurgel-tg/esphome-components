@@ -11,13 +11,14 @@ from esphome.const import (
     CONF_SENSORS,    
     CONF_STATE_CLASS,
     CONF_UPDATE_INTERVAL,
-    CONF_UNIT_OF_MEASUREMENT, 
+    CONF_UNIT_OF_MEASUREMENT,
 )
 
 # WR3223 Namespace holen (bereits in __init__.py definiert)
 from . import (
     WR3223,
     CONF_WR3223_ID,
+    CONF_DEACTIVATE,
     wr3223_ns
 )
 
@@ -50,19 +51,23 @@ def validate_custom_command(value):
         raise cv.Invalid(f"Custom command '{value}' must be exactly two alphanumeric characters long.")
     return value
 
-
 # **Definition der einzelnen Temperatur-Sensoren**
 CONFIG_SCHEMA = cv.Schema(
     {        
     cv.GenerateID(CONF_WR3223_ID): cv.use_id(WR3223),
 
     # **Standard-Sensoren mit IntelliSense (NUR vordefinierte Werte)**
-    cv.Optional(CONF_SENSORS, default=[]): cv.ensure_list(
-        cv.Schema({
-            cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                
-            cv.Required(CONF_COMMAND): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),            
-        }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s")),
-    ),
+    cv.Optional(CONF_SENSORS, default={}): cv.Schema({
+        cv.Optional(k, default={}): cv.Schema({        
+            cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                 
+            cv.Required(CONF_COMMAND, default=k): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),  # Standard-Kommando setzen
+            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
+            cv.Optional(CONF_NAME, default=SENSOR_COMMANDS[k][0]): cv._validate_entity_name,  # Standard-Name setzen
+            cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]): sensor.validate_unit_of_measurement,  # Standard-Einheit setzen
+            cv.Optional(CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]): sensor.validate_device_class,  # Standard-Klasse setzen
+        }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s"))
+        for k in SENSOR_COMMANDS.keys()
+    }),
 
     # **Benutzerdefinierte Sensoren (MÜSSEN genau 2 Zeichen haben + Pflichtfelder)**
     cv.Optional(CONF_SENSORS_CUSTOM, default=[]): cv.ensure_list(
@@ -72,22 +77,17 @@ CONFIG_SCHEMA = cv.Schema(
                 cv.Required(CONF_COMMAND): cv.All(cv.string, validate_custom_command),
                 cv.Required(CONF_NAME): cv._validate_entity_name,
                 cv.Required(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
-                cv.Required(CONF_DEVICE_CLASS): sensor.validate_device_class,                
+                cv.Required(CONF_DEVICE_CLASS): sensor.validate_device_class,
             }
         ).extend(cv.polling_component_schema("60s")),
     ),
-
 }).extend(cv.COMPONENT_SCHEMA)
 
 
 async def generate_sensor_code(parent, sensor_config):
     """Erstellt den Code für einen einzelnen Sensor."""
-    
+
     command = sensor_config[CONF_COMMAND]
-    sensor_config.setdefault(CONF_NAME, SENSOR_COMMANDS.get(command, ("", "", ""))[0])  # Falls Standard, nehme `SENSOR_COMMANDS`
-    sensor_config.setdefault(CONF_UNIT_OF_MEASUREMENT, SENSOR_COMMANDS.get(command, ("", "", ""))[1])
-    sensor_config.setdefault(CONF_DEVICE_CLASS, SENSOR_COMMANDS.get(command, ("", "", ""))[2])
-    sensor_config.setdefault(CONF_STATE_CLASS, sensor.validate_state_class(STATE_CLASS_MEASUREMENT))
 
     sens = await sensor.new_sensor(sensor_config)
     
@@ -108,8 +108,10 @@ async def to_code(config):
     # WR3223 Hauptkomponente abrufen
     parent = await cg.get_variable(config[CONF_WR3223_ID])
 
-    # Standard-Sensoren durchgehen
-    for sensor_config in config.get(CONF_SENSORS, []):
+     # Standard-Sensoren (Dictionary: {command: sensor_config})
+    for sensor_config in config.get(CONF_SENSORS, {}).items():
+        if sensor_config.get(CONF_DEACTIVATE, False):
+            continue  # Sensor nicht erstellen, wenn deaktiviert        
         await generate_sensor_code(parent, sensor_config)
 
     # Benutzerdefinierte Sensoren durchgehen
