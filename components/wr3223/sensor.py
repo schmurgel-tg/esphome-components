@@ -59,12 +59,8 @@ CONFIG_SCHEMA = cv.Schema(
     # **Standard-Sensoren mit IntelliSense (NUR vordefinierte Werte)**
     cv.Optional(CONF_SENSORS, default={}): cv.Schema({
         cv.Optional(k, default={}): cv.Schema({        
-            cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                 
-            cv.Required(CONF_COMMAND, default=k): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),  # Standard-Kommando setzen
+            cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                             
             cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
-            cv.Optional(CONF_NAME, default=SENSOR_COMMANDS[k][0]): cv._validate_entity_name,  # Standard-Name setzen
-            cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]): sensor.validate_unit_of_measurement,  # Standard-Einheit setzen
-            cv.Optional(CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]): sensor.validate_device_class,  # Standard-Klasse setzen
         }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s"))
         for k in SENSOR_COMMANDS.keys()
     }),
@@ -109,9 +105,16 @@ async def to_code(config):
     parent = await cg.get_variable(config[CONF_WR3223_ID])
 
      # Standard-Sensoren (Dictionary: {command: sensor_config})
-    for sensor_config in config.get(CONF_SENSORS, {}).items():
+    for command, sensor_config in config.get(CONF_SENSORS, {}).items():
         if sensor_config.get(CONF_DEACTIVATE, False):
-            continue  # Sensor nicht erstellen, wenn deaktiviert        
+            continue  # Sensor nicht erstellen, wenn deaktiviert             
+
+        sensor_config[CONF_COMMAND] = command
+        # Standardwerte setzen, falls nicht vorhanden        
+        sensor_config.setdefault(CONF_NAME, SENSOR_COMMANDS[command][0])  # Name aus `SENSOR_COMMANDS`
+        sensor_config.setdefault(CONF_UNIT_OF_MEASUREMENT, SENSOR_COMMANDS[command][1])
+        sensor_config.setdefault(CONF_DEVICE_CLASS, SENSOR_COMMANDS[command][2])
+        
         await generate_sensor_code(parent, sensor_config)
 
     # Benutzerdefinierte Sensoren durchgehen
