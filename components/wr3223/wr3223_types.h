@@ -43,7 +43,7 @@ class CommandPair {
     #ifdef USE_TEXT_SENSOR
     text_sensor::TextSensor *textSensor = nullptr;
     #endif    
-    bool (*publisherFunc)(const char*) = nullptr;
+    std::function<bool(const char*)> publisherFunc = nullptr; 
 
 public:
     #ifdef USE_SENSOR
@@ -64,7 +64,7 @@ public:
     CommandPair(const char *pCmd, ECommandResultType pResultType) 
         : cmd(pCmd), resultType(pResultType) {}
 
-    CommandPair(const char *pCmd, bool (*function)(const char*)) 
+    CommandPair(const char *pCmd, std::function<bool(const char*)> function)
         : cmd(pCmd), publisherFunc(function) {}
 
     const char* cmd;
@@ -97,7 +97,6 @@ public:
             if (publisherFunc != nullptr) {
                 return publisherFunc(data.c_str());
             }
-            return false;
         
             ESP_LOGD("COMMAND", "Cmd %s tried to publish_data: %s", cmd, data.c_str());            
             return false;        

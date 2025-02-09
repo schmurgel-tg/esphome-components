@@ -4,6 +4,8 @@
 namespace esphome {
 namespace wr3223 {
 
+  static const char *TAG = "wr3223_connector";
+
 // Definition der globalen Variablen (eine einzige Definition in dieser Datei)
 /// @brief Gibt an, ob ein frischer Start nach einem Stromausfall erfolgt
 bool freshStart = true;
@@ -32,7 +34,7 @@ bool WR3223Connector::waitUntilDataAvailable(int dataCount, long timeout) {
         
     }
 
-  ESP_LOGE("PUBLISHER", "Fehler beim Warten auf die Daten.");
+  ESP_LOGE(TAG, "Fehler beim Warten auf die Daten.");
   return false;
 }
 
@@ -81,7 +83,7 @@ void WR3223Connector::setCommandToMessage(uint8_t *message, char commandBit,
 void WR3223Connector::setControllerAddressToMessage(uint8_t *message, int addr,
                                                     int offset) {
   if (addr > 99) {
-    ESP_LOGE("WR3223_Connector",
+    ESP_LOGE(TAG,
              "Fehler: Die Adresse muss zwischen 1 und 99 liegen.");
     return;
   }
@@ -147,25 +149,20 @@ int WR3223Connector::get_data_length(char *data, int maxLength) {
       counter++;
   }
 
-  ESP_LOGD("WR3223_Connector",
+  ESP_LOGD(TAG,
            "Kein Abschluss-Flag gefunden, so können wir die Datenlänge nicht "
            "bestimmen. (counter: %i)",
            counter);
   return 0;
 }
 
-/// @brief Liest eine Antwort vom Gerät für ein bestimmtes Kommando.
-/// @param answer Der Buffer für die Antwort
-/// @param max_line_length Maximale Länge des Buffers
-/// @param pCmd Das Kommando
-/// @return Anzahl der Datenbits (nicht die Position!)
 int WR3223Connector::readLine(char *answer, int max_line_length,
-                              CommandPair pCmd) {
+                              const char *command) {
   static uint8_t message[8] = {
       MessageControl::EOT, 0x30, 0x30, 0x31, 0x31, 0x00, 0x00,
       MessageControl::ENQ};
   setControllerAddressToMessage(message, 1, 1);
-  setCommandToMessage(message, pCmd.GetCommandBit(), pCmd.GetCommand(), 5);
+  setCommandToMessage(message, command[0], command[1], 5);
 
   write_array(message, 8);
   flush();
@@ -180,20 +177,20 @@ int WR3223Connector::readLine(char *answer, int max_line_length,
   //  Check answer1
   if ((uint8_t)answer[0] != MessageControl::STX ||
       (uint8_t)answer[answerLength - 1] != MessageControl::ETX) {
-    ESP_LOGE("Reader", "Start/end of the connector answer is wrong.");
+    ESP_LOGE(TAG, "Start/end of the connector answer is wrong.");
     return 0;
   }
 
   if (chkSum != buildCheckSum(answer, 1, answerLength - 1)) {
-    ESP_LOGE("Reader", "Fehler: Checksum error. Expected %x but got %x.",
+    ESP_LOGE(TAG, "Fehler: Checksum error. Expected %x but got %x.",
              chkSum, buildCheckSum(answer, 1, answerLength - 1));
     return 0;
   }
 
-  if (pCmd.GetCommandBit() != answer[1] || pCmd.GetCommand() != answer[2]) {
-    ESP_LOGE("Reader",
+  if (command[0] != answer[1] || command[1] != answer[2]) {
+    ESP_LOGE(TAG,
              "Fehler: Wrong command received. Expected %s but got %c%c.",
-             pCmd.cmd, answer[1], answer[2]);
+             command, answer[1], answer[2]);
   }
   return get_data_length(answer, answerLength);
 }
@@ -202,17 +199,17 @@ int WR3223Connector::readLine(char *answer, int max_line_length,
 /// @param cmd Das Kommando
 /// @param data Die zu sendenden Daten
 /// @return `true`, wenn das Schreiben erfolgreich war, sonst `false`
-bool WR3223Connector::write(CommandPair cmd, const char *data) {
+bool WR3223Connector::write(const char *command, const char *data) {
   int dataLength = strlen(data);
   // Check if the provided data not longer then 6 characters.
   if (data == 0 || dataLength > 6 || dataLength == 0) {
-    ESP_LOGE("WRITER", "Not valid data format.");
+    ESP_LOGE(TAG, "Not valid data format.");
     return false;
   }
 
-  ESP_LOGE("WRITER", "WRITE: %s", data);
-  ESP_LOGE("WRITER", "Data Length: %i", dataLength);
-  ESP_LOGE("WRITER", "COMMAND: %S", cmd.cmd);
+  ESP_LOGD(TAG, "WRITE: %s", data);
+  ESP_LOGD(TAG, "Data Length: %i", dataLength);
+  ESP_LOGD(TAG, "COMMAND: %S", command);
 
   int msgLength = 10 + dataLength;
   // Write command to the controller
@@ -220,7 +217,7 @@ bool WR3223Connector::write(CommandPair cmd, const char *data) {
   message[0] = MessageControl::EOT;
   setControllerAddressToMessage(message, 1, 1);
   message[5] = MessageControl::STX;
-  setCommandToMessage(message, cmd.GetCommandBit(), cmd.GetCommand(), 6);
+  setCommandToMessage(message, command[0], command[1], 6);
 
   // byte[] d = data.getBytes();
 
@@ -235,12 +232,12 @@ bool WR3223Connector::write(CommandPair cmd, const char *data) {
   uint8_t chkSum = (uint8_t)buildCheckSum(message, 6, dataLength + 2 + 6);
   message[msgLength - 1] = chkSum;
 
-  ESP_LOGE("WRITER", "Data to Write: %s",
+  ESP_LOGD(TAG, "Data to Write: %s",
            WR3223Helper::to_hex_string(message, msgLength).c_str());
 
   if (bedienteilAktiv) {
 
-    ESP_LOGE("WRITER", "Bedienteil ist aktiv, kein schreiben möglich");
+    ESP_LOGE(TAG, "Bedienteil ist aktiv, kein schreiben möglich");
     return false;
   }
 
@@ -253,21 +250,21 @@ bool WR3223Connector::write(CommandPair cmd, const char *data) {
 
     int answerLength = readAnswer(answer, max_length);
     if (answerLength == 0) {
-      ESP_LOGE("WRITER", "Keine Antwort erhalten!");
+      ESP_LOGE(TAG, "Keine Antwort erhalten!");
       return false;
     }
 
-    ESP_LOGD("WRITER", "Antwort erhalten: %s",
+    ESP_LOGD(TAG, "Antwort erhalten: %s",
              WR3223Helper::to_hex_string(answer, answerLength).c_str());
     if (answer[0] == MessageControl::ACK) {
-      ESP_LOGI("WRITER", "Antwort POSITIV");
+      ESP_LOGI(TAG, "Antwort POSITIV");
       return true;
     } else {
-      ESP_LOGE("WRITER", "Antwort NEGATIV");
+      ESP_LOGE(TAG, "Antwort NEGATIV");
       return false;
     }
   } else
-    ESP_LOGE("WRITER", "Timeout - keine Antwort erhalten!");
+    ESP_LOGE(TAG, "Timeout - keine Antwort erhalten!");
   return false;
 }
 

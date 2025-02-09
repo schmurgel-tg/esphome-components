@@ -3,13 +3,15 @@ import esphome.config_validation as cv
 from esphome.components import sensor
 from esphome.const import (
     UNIT_CELSIUS, 
-    CONF_UNIT_OF_MEASUREMENT, 
-    CONF_DEVICE_CLASS, 
     DEVICE_CLASS_TEMPERATURE, 
+    DEVICE_CLASS_FREQUENCY,
     STATE_CLASS_MEASUREMENT,         
+    CONF_DEVICE_CLASS, 
     CONF_NAME,
-    CONF_UPDATE_INTERVAL,
     CONF_SENSORS,    
+    CONF_STATE_CLASS,
+    CONF_UPDATE_INTERVAL,
+    CONF_UNIT_OF_MEASUREMENT, 
 )
 
 # WR3223 Namespace holen (bereits in __init__.py definiert)
@@ -33,8 +35,8 @@ SENSOR_COMMANDS = {
     "T8": ("Nach Vorheizregister", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
 
     # Drehzahl-Sensoren
-    "NA": ("Drehzahl Abluft", "rpm", STATE_CLASS_MEASUREMENT),
-    "NZ": ("Drehzahl Zuluft", "rpm", STATE_CLASS_MEASUREMENT),
+    "NA": ("Drehzahl Abluft", "rpm", DEVICE_CLASS_FREQUENCY),
+    "NZ": ("Drehzahl Zuluft", "rpm", DEVICE_CLASS_FREQUENCY),
 }
 
 CONF_COMMAND = "command"
@@ -56,30 +58,23 @@ CONFIG_SCHEMA = cv.Schema(
 
     # **Standard-Sensoren mit IntelliSense (NUR vordefinierte Werte)**
     cv.Optional(CONF_SENSORS, default=[]): cv.ensure_list(
-        cv.Schema(
-            {
-                cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                
-                cv.Required(CONF_COMMAND): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),            
-                cv.Optional(CONF_NAME): cv.string,
-                cv.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
-                cv.Optional(CONF_DEVICE_CLASS): cv.string,
-                cv.Optional(CONF_UPDATE_INTERVAL, default="5s"): cv.positive_time_period_milliseconds,
-            }
-        ).extend(sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT)),
+        cv.Schema({
+            cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                
+            cv.Required(CONF_COMMAND): cv.one_of(*SENSOR_COMMANDS.keys(), lower=False),            
+        }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s")),
     ),
 
     # **Benutzerdefinierte Sensoren (MÜSSEN genau 2 Zeichen haben + Pflichtfelder)**
     cv.Optional(CONF_SENSORS_CUSTOM, default=[]): cv.ensure_list(
-        cv.Schema(
+        sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT).extend(
             {
                 cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
                 cv.Required(CONF_COMMAND): cv.All(cv.string, validate_custom_command),
-                cv.Required(CONF_NAME): cv.string,  # Pflichtfelder
-                cv.Required(CONF_UNIT_OF_MEASUREMENT): cv.string,
-                cv.Required(CONF_DEVICE_CLASS): cv.string,
-                cv.Optional(CONF_UPDATE_INTERVAL, default="5s"): cv.positive_time_period_milliseconds,
+                cv.Required(CONF_NAME): cv._validate_entity_name,
+                cv.Required(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
+                cv.Required(CONF_DEVICE_CLASS): sensor.validate_device_class,                
             }
-        ).extend(sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT)),
+        ).extend(cv.polling_component_schema("60s")),
     ),
 
 }).extend(cv.COMPONENT_SCHEMA)
@@ -89,19 +84,13 @@ async def generate_sensor_code(parent, sensor_config):
     """Erstellt den Code für einen einzelnen Sensor."""
     
     command = sensor_config[CONF_COMMAND]
-    name = sensor_config.get(CONF_NAME, SENSOR_COMMANDS.get(command, ("", "", ""))[0])  # Falls Standard, nehme `SENSOR_COMMANDS`
-    unit = sensor_config.get(CONF_UNIT_OF_MEASUREMENT, SENSOR_COMMANDS.get(command, ("", "", ""))[1])
-    device_class = sensor_config.get(CONF_DEVICE_CLASS, SENSOR_COMMANDS.get(command, ("", "", ""))[2])
+    sensor_config.setdefault(CONF_NAME, SENSOR_COMMANDS.get(command, ("", "", ""))[0])  # Falls Standard, nehme `SENSOR_COMMANDS`
+    sensor_config.setdefault(CONF_UNIT_OF_MEASUREMENT, SENSOR_COMMANDS.get(command, ("", "", ""))[1])
+    sensor_config.setdefault(CONF_DEVICE_CLASS, SENSOR_COMMANDS.get(command, ("", "", ""))[2])
+    sensor_config.setdefault(CONF_STATE_CLASS, sensor.validate_state_class(STATE_CLASS_MEASUREMENT))
 
     sens = await sensor.new_sensor(sensor_config)
-    cg.add(sens.set_name(name))
-
-    if unit:
-        cg.add(sens.set_unit_of_measurement(unit))
-
-    if device_class:
-        cg.add(sens.set_device_class(device_class))
-
+    
     var = cg.new_Pvariable(
         sensor_config[CONF_SENSOR_POLLING_COMPONENT_ID],  
         parent,

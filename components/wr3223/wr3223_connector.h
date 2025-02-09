@@ -2,7 +2,7 @@
 
 #include "esphome/components/uart/uart.h"
 #include "wr3223_constants.h"
-#include "wr3223_types.h"
+#include "wr3223_helper.h"
 
 namespace esphome {
 namespace wr3223 {
@@ -21,16 +21,16 @@ public:
   /// liefert die Anzahl der Datenbits.
   /// @param answer Der Buffer für die Antwort
   /// @param max_line_length Die maximale Länge der Antwort (des Buffers)
-  /// @param pCmd Das Kommando, das gesendet werden soll
+  /// @param command Das Kommando, das gesendet werden soll
   /// @return Anzahl der Datenbits (nicht die Position, Datenbits starten nicht
   /// bei 0)
-  int readLine(char *answer, int max_line_length, CommandPair pCmd);
+  int readLine(char *answer, int max_line_length, const char *command);
 
   /// @brief Sendet einen Befehl mit den angegebenen Daten an das Gerät.
-  /// @param cmd Das zu sendende Kommando
+  /// @param command Das zu sendende Kommando
   /// @param data Die zu sendenden Daten (maximal 6 Zeichen)
   /// @return `true`, wenn das Schreiben erfolgreich war, sonst `false`
-  bool write(CommandPair cmd, const char *data);
+  bool write(const char *command, const char *data);
 
 private:
   bool waitUntilDataAvailable(int dataCount, long timeout);

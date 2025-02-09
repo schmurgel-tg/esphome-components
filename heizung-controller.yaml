@@ -41,22 +41,35 @@ wr3223:
 # Sensoren
 sensor:
   - platform: wr3223
-    sensors:
+    sensors: # hier alle sensoren mit bekannten kommandos (diese haben standardwerte)
       - command: "T1"
         name: "Verdampfertemperatur"
       - command: "T2"
         name: "Kondensatortemperatur"
-        update_interval: 15s
+        update_interval: 15s #default (60s) überschrieben
       - command: "T3"
         name: "Außentemperatur"
       - command: "T5"
-        name: "Nach Wärmetauscher (Fortluft)"
-      - command: "T6"
-        name: "Zulufttemperatur"
-    sensors_custom:
+      - command: "T6"        
+    sensors_custom: # hier eigene kommando, diese erfordern weitere angaben
       - command: "XZ"
         name: "Custom-Kommand"
         unit_of_measurement: V
         device_class: temperature
-#binary_sensor:
-#text_sensor:
+
+
+# Binär-Sensoren
+binary_sensor:
+  - platform: wr3223
+    relais_sensors:
+      zusatzheizung:
+        deactivate: true # Dieser Sensor wird nicht erstellt
+      kompressor:
+        name: "Anderer Name"
+        entity_category: "diagnostic"
+        device_class: "power"  # Falls gewünscht, kann die `device_class` überschrieben werden        
+      bypass:
+        name: "Relais: Bypass"
+        entity_category: "config"
+
+
