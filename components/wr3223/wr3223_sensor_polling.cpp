@@ -6,24 +6,36 @@ namespace wr3223 {
 
 static const char *const TAG = "wr3223_sensor_polling";
 
-void WR3223SensorPollingComponent::setup() {}
-
 void WR3223SensorPollingComponent::update() {
+    ESP_LOGD(TAG, "Sende Anfrage für Kommando: %s", command_);
+    
+    this->parent_->connector_.send_request(command_, [this](char *response) {
+        this->process_response(response);
+    });
+}
 
-  ESP_LOGD(TAG, "Update CommandPair: %s", cmd_pair.cmd);
-  char response[20];
-  int data_len =
-      this->parent_->connector_.readLine(response, sizeof(response), cmd_pair.cmd);
-  yield();
-  if (data_len > 0) {
-    std::string result(response);
-    ESP_LOGI(TAG, "Command %s: Value = %s", cmd_pair.cmd, result.c_str());
-    cmd_pair.publish_data(result);
-  } else {
-    ESP_LOGW(TAG, "Command %s: Keine Antwort vom WR3223 erhalten.",
-             cmd_pair.cmd);
-  }
+void WR3223SensorPollingComponent::process_response(char *response) {
+    if (!response || strlen(response) == 0) {
+        ESP_LOGW(TAG, "Command %s: Keine Antwort vom WR3223 erhalten.", command_);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Command %s: Antwort = %s", command_, response);
+
+    if (sensor_) {
+        float value = atof(response);
+        ESP_LOGD(TAG, "Sensorwert für %s: %f", command_, value);
+        sensor_->publish_state(value);
+    } else if (binary_sensor_) {
+        bool state = (strcmp(response, "1") == 0);
+        ESP_LOGD(TAG, "BinarySensor für %s: %d", command_, state);
+        binary_sensor_->publish_state(state);
+    } else if (text_sensor_) {
+        ESP_LOGD(TAG, "TextSensor für %s: %s", command_, response);
+        text_sensor_->publish_state(response);
+    }
 }
 
 } // namespace wr3223
 } // namespace esphome
+

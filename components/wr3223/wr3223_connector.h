@@ -3,6 +3,9 @@
 #include "esphome/components/uart/uart.h"
 #include "wr3223_constants.h"
 #include "wr3223_helper.h"
+#include <functional>
+#include <unordered_map>
+
 
 namespace esphome {
 namespace wr3223 {
@@ -13,35 +16,24 @@ extern bool freshStart;
 /// @brief Wird über den RelaisDecoder aktualisiert
 extern bool bedienteilAktiv;
 
-class WR3223Connector : public uart::UARTDevice {
+class WR3223Connector : public Component, public uart::UARTDevice {
 public:
-  WR3223Connector(uart::UARTComponent *parent);
+  WR3223Connector(uart::UARTComponent *parent) : UARTDevice(parent) {}
 
-  /// @brief Liest die Antwort eines Kommandos in den übergebenen Buffer und
-  /// liefert die Anzahl der Datenbits.
-  /// @param answer Der Buffer für die Antwort
-  /// @param max_line_length Die maximale Länge der Antwort (des Buffers)
-  /// @param command Das Kommando, das gesendet werden soll
-  /// @return Anzahl der Datenbits (nicht die Position, Datenbits starten nicht
-  /// bei 0)
-  int readLine(char *answer, int max_line_length, const char *command);
-
-  /// @brief Sendet einen Befehl mit den angegebenen Daten an das Gerät.
-  /// @param command Das zu sendende Kommando
-  /// @param data Die zu sendenden Daten (maximal 6 Zeichen)
-  /// @return `true`, wenn das Schreiben erfolgreich war, sonst `false`
-  bool write(const char *command, const char *data);
+  void send_request(const char *command, std::function<void(char *answer)> callback);
+  void loop() override;
 
 private:
-  bool waitUntilDataAvailable(int dataCount, long timeout);
   int readAnswer(char *buffer, int len);
-  void setCommandToMessage(uint8_t *message, char commandBit, char command,
-                           int offset);
-  void setControllerAddressToMessage(uint8_t *message, int addr, int offset);
-  std::string toString(char *answer, int start, int end);
   int buildCheckSum(const char *answer, int start, int end);
-  int buildCheckSum(uint8_t *msg, int start, int end);
-  int get_data_length(char *data, int maxLength);
+  void send_next_request(); // Versendet die nächste Anfrage in der Queue
+
+  struct CallbackInfo {    
+    uint32_t last_sent; // Zeitpunkt der Anfrage
+    std::function<void(char *answer)> callback;  // Callback bei Antwort
+  };
+
+  std::unordered_map<std::string, CallbackInfo> request_map_;  // Dictionary für Requests 
 };
 
 } // namespace wr3223

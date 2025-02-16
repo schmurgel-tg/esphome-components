@@ -21,7 +21,7 @@ WR3223ErrorComponent = wr3223_ns.class_("WR3223ErrorComponent", cg.PollingCompon
 
 
 # Automatisches Laden des UART-Moduls
-AUTO_LOAD = ["uart", "text_sensor"]
+AUTO_LOAD = ["uart", "text_sensor", "binary_sensor"]
 
 CONF_WR3223_ID = "wr3223_id"
 CONF_WR3223_ERROR_COMPONENT_ID = "wr3223_error_component_id"
