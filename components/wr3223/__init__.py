@@ -17,6 +17,7 @@ wr3223_ns = cg.esphome_ns.namespace("wr3223")
 
 # Hauptklasse für das WR3223-Gerät
 WR3223 = wr3223_ns.class_("WR3223", cg.PollingComponent)
+WR3223Connector = wr3223_ns.class_("WR3223Connector", cg.Component)
 WR3223ErrorComponent = wr3223_ns.class_("WR3223ErrorComponent", cg.PollingComponent)
 
 
@@ -24,6 +25,7 @@ WR3223ErrorComponent = wr3223_ns.class_("WR3223ErrorComponent", cg.PollingCompon
 AUTO_LOAD = ["uart", "text_sensor", "binary_sensor"]
 
 CONF_WR3223_ID = "wr3223_id"
+CONF_WR3223_CONNECTOR_ID = "wr3223_connector_id"
 CONF_WR3223_ERROR_COMPONENT_ID = "wr3223_error_component_id"
 CONF_DEACTIVATE = "deactivate"
 CONF_ERROR_POLLING = "error_polling"
@@ -32,7 +34,8 @@ CONF_ERROR_TEXT = "error_text_sensor"
 
 # YAML-Validierung für ESPHome
 CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(CONF_WR3223_ID): cv.declare_id(WR3223),
+    cv.GenerateID(CONF_WR3223_ID): cv.declare_id(WR3223),    
+    cv.GenerateID(CONF_WR3223_CONNECTOR_ID): cv.declare_id(WR3223Connector),
     cv.GenerateID(CONF_WR3223_ERROR_COMPONENT_ID): cv.declare_id(WR3223ErrorComponent),
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
@@ -57,8 +60,15 @@ CONFIG_SCHEMA = cv.Schema({
 # Code-Generierung für ESPHome
 async def to_code(config):
     # Hauptkomponente erzeugen
-    var = cg.new_Pvariable(config[CONF_WR3223_ID], await cg.get_variable(config[CONF_UART_ID]))
+    var = cg.new_Pvariable(config[CONF_WR3223_ID], await cg.get_variable(config[CONF_UART_ID]))    
     await cg.register_component(var, config)
+
+    # WR3223Connector als eigene Komponente registrieren
+    connector = cg.new_Pvariable(config[CONF_WR3223_CONNECTOR_ID], await cg.get_variable(config[CONF_UART_ID]))
+    cg.add(var.set_connector(connector))  # Verbinde den Connector mit WR3223
+    
+    await cg.register_component(connector, {})
+
 
     error_polling = config.get(CONF_ERROR_POLLING)        
     

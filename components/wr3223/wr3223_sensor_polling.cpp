@@ -9,7 +9,7 @@ static const char *const TAG = "wr3223_sensor_polling";
 void WR3223SensorPollingComponent::update() {
     ESP_LOGD(TAG, "Sende Anfrage für Kommando: %s", command_);
     
-    this->parent_->connector_.send_request(command_, [this](char *response) {
+    this->parent_->connector_->send_request(command_, [this](char *response) {
         this->process_response(response);
     });
 }

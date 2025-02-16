@@ -20,8 +20,10 @@ class WR3223Connector : public Component, public uart::UARTDevice {
 public:
   WR3223Connector(uart::UARTComponent *parent) : UARTDevice(parent) {}
 
-  void send_request(const char *command, std::function<void(char *answer)> callback);
+  void setup() override;
   void loop() override;
+
+  void send_request(const char *command, std::function<void(char *answer)> callback);  
 
 private:
   int readAnswer(char *buffer, int len);
@@ -34,6 +36,8 @@ private:
   };
 
   std::unordered_map<std::string, CallbackInfo> request_map_;  // Dictionary für Requests 
+  std::unordered_map<std::string, int> error_count_map_; // Fehler-Tracking
+  std::string current_command_ = ""; // Das aktuelle Kommando
 };
 
 } // namespace wr3223

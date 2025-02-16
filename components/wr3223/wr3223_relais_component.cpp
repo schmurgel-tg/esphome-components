@@ -16,7 +16,7 @@ void WR3223RelaisComponent::update() {
       return;
   }
   
-  this->parent_->connector_.send_request(WR3223Commands::RL, [this](char *response) {
+  this->parent_->connector_->send_request(WR3223Commands::RL, [this](char *response) {
       this->process_response(response);
   });
 

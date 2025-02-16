@@ -29,7 +29,7 @@ void WR3223ErrorComponent::setup() {
 void WR3223ErrorComponent::update() {
   ESP_LOGD(TAG, "Sende Fehlerabfrage (ER-Kommando).");
 
-  this->parent_->connector_.send_request(
+  this->parent_->connector_->send_request(
       WR3223Commands::ER,
       [this](char *response) { this->process_response(response); });
 }
