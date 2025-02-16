@@ -72,8 +72,9 @@ int WR3223Connector::readAnswer(char *buffer, int len) {
     }
 
     // Falls Nachricht zu lang wird, abbrechen
-    if (pos >= len - 1) {
+    if (pos >= len - 2) { // -2 damit noch Platz für \0 ist
       ESP_LOGE(TAG, "Antwort ist zu lang! Abbruch.");
+      buffer[pos] = '\0';
       return -1;
     }
 
@@ -84,6 +85,7 @@ int WR3223Connector::readAnswer(char *buffer, int len) {
       if (!available()) {
         ESP_LOGE(TAG,
                  "Antwort endet mit <ETX>, aber keine Checksumme gefunden!");
+        buffer[pos] = '\0';  // Nullterminierung
         return -1;
       }
 
@@ -167,15 +169,19 @@ void WR3223Connector::loop() {
   if (request_map_.count(received_cmd)) {
 
     // Nur den Datenbereich extrahieren
-    char *data_start = answer_buffer + 3; // Daten beginnen nach C1 und C2
-    int data_length = answer_length - 4;  // Daten bis vor ETX
-    data_start[data_length] = '\0';       // Null-Terminator für Sicherheit
+    char *data = answer_buffer + 3; // Daten beginnen nach C1 und C2
+    int data_length = answer_length - 5;  // Daten bis vor ETX (-5 durch STX, C1, C2, ETX, Checksumme)
+    
+    if(data_length > 0){
+      data[data_length] = '\0';// Null-Terminator als Ende setzen (Checksumme und ETX brauchen wir nicht)
+    } else {
+      data = (char *)""; // Falls keine Daten, leere Zeichenkette nutzen
+    }
 
     // Callback nur mit Datenbereich aufrufen
-    request_map_[received_cmd].callback(data_start);
+    request_map_[received_cmd].callback(data);
 
-    ESP_LOGD(TAG, "Antwort für %s verarbeitet: %s", received_cmd.c_str(),
-             answer_buffer);
+    ESP_LOGD(TAG, "Antwort für %s verarbeitet: %s", received_cmd.c_str(), data);
 
     // Anfrage aus Map entfernen, da sie verarbeitet wurde
     request_map_.erase(received_cmd);
