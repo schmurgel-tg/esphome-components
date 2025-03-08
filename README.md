@@ -64,29 +64,17 @@ binary_sensor:
 
 ## Detailkonfiguration
 ```yaml
-uart:
-  - id: uart_bus
-    tx_pin: GPIO19
-    rx_pin: GPIO18
-    baud_rate: 9600
-    data_bits: 7
-    parity: EVEN
-    stop_bits: 1
-
-wr3223:
-  uart_id: uart_bus
-
 # Sensoren
 sensor:
   - platform: wr3223
-    sensors: # hier alle sensoren mit bekannten kommandos (diese haben standardwerte)
+    sensors: # hier können alle Sensoren mit bekannten Kommandos angepasst oder deaktiviert werden
       T1:
-        name: "Verdampfertemperatur" # der Name kann überchrieben werden
+        name: "Verdampfertemperatur" # z.B. der Name kann überschrieben werden
       T2:
-        deactivate: true # alle Temperatur kommaadnos werden per Default angelegt, soll wird eins nicht benötigt, kann es deaktiviert werden
+        deactivate: true # wird ein Kommando nicht benötigt, kann es deaktiviert werden
       T3:
-        update_interval: "15s" # es kann der Updateintervall für jedes einzelen gesetzt werden, standardmßig sind es 60s
-    sensors_custom: # hier können eigene Kommando hinzugefügt werden
+        update_interval: "15s" # Der standard Update-Intervall liegt für alle bei 60s, dieser kann hier angepasst werden
+    sensors_custom: # In diesem Bereich können eigene Kommando hinzugefügt werden (siehe Kommandoliste für WR-3223)
       - command: "XZ"
         name: "Custom-Kommand"
         unit_of_measurement: V
