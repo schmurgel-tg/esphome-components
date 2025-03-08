@@ -13,15 +13,15 @@ Mit diesem Projekt kannst du eine Hermes WR 3223-basierte Heizungs- bzw. Lüftun
 - Komfortable Ansteuerung direkt aus Home Assistant
 
 ## Installation und Einbindung
-1. Vorbereitung
+1. Vorbereitung  
 Du benötigst ESPHome (meist über Home Assistant Add-on installiert oder eigenständig nutzbar).  
 Dein ESP32/ESP8266 muss mit der WR3223-Steuerung seriell verbunden sein (UART).  
 Achte dabei auf:  
 Baudrate (i. d. R. 9600)  
 Datenbits / Parität / Stopbits (hier im Projekt: 7 Datenbits, EVEN-Parität, 1 Stoppbit)  
-Richtige Zuordnung von TX-/RX-Pins am Mikrocontroller (siehe Bild)  
+Richtige Zuordnung von TX-/RX-Pins am Mikrocontroller (siehe Bild):  
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/pinout.jpg "Serial port pinout")  
-3. Externe Komponente einbinden
+3. Externe Komponente einbinden  
 Damit ESPHome diese Custom Components direkt aus diesem Git-Repository lädt, kannst du in deiner esphome:-Konfiguration den Bereich für externe Komponenten konfigurieren.  
 Dafür fügst du in deiner YAML-Datei Folgendes hinzu (diese Einbindung ist ein Beispiel; ggf. anpassen):  
 ```yaml
