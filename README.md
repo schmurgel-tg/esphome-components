@@ -110,3 +110,5 @@ binary_sensor:
         entity_category: "config"
 ```
 
+![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  
+
