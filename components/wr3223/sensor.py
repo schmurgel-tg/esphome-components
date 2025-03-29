@@ -61,18 +61,14 @@ CONFIG_SCHEMA = cv.Schema(
     cv.Optional(CONF_SENSORS, default={}): cv.Schema({
         cv.Optional(k, default={}): cv.Schema({        
             cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                             
-            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
-            cv.Optional(CONF_ACCURACY_DECIMALS, default=1): cv.int_,
+            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean  # Sensor deaktivieren            
         }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s"))
         for k in SENSOR_COMMANDS.keys()
     }),
 
     # **Benutzerdefinierte Sensoren (MÜSSEN genau 2 Zeichen haben + Pflichtfelder)**
     cv.Optional(CONF_SENSORS_CUSTOM, default=[]): cv.ensure_list(
-        sensor.sensor_schema(
-            state_class=STATE_CLASS_MEASUREMENT,
-            accuracy_decimals=1
-            ).extend(
+        sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT).extend(
             {
                 cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
                 cv.Required(CONF_COMMAND): cv.All(cv.string, validate_custom_command),
@@ -91,8 +87,6 @@ async def generate_sensor_code(parent, sensor_config):
     command = sensor_config[CONF_COMMAND]
 
     sens = await sensor.new_sensor(sensor_config)
-    
-    await sensor.setup_sensor_core_(sens, sensor_config)
 
     var = cg.new_Pvariable(
         sensor_config[CONF_SENSOR_POLLING_COMPONENT_ID],  
@@ -121,6 +115,7 @@ async def to_code(config):
         sensor_config.setdefault(CONF_NAME, SENSOR_COMMANDS[command][0])  # Name aus `SENSOR_COMMANDS`
         sensor_config.setdefault(CONF_UNIT_OF_MEASUREMENT, SENSOR_COMMANDS[command][1])
         sensor_config.setdefault(CONF_DEVICE_CLASS, SENSOR_COMMANDS[command][2])
+        sensor_config.setdefault(CONF_ACCURACY_DECIMALS, 1)
         
         await generate_sensor_code(parent, sensor_config)
 
