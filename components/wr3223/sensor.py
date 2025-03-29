@@ -92,6 +92,14 @@ async def generate_sensor_code(parent, sensor_config):
 
     sens = await sensor.new_sensor(sensor_config)
     
+    # Genauigkeit muss manuell gesetzt werden, wird nciht automatisch übernommen
+    if CONF_ACCURACY_DECIMALS in sensor_config:
+        cg.add(sens.set_accuracy_decimals(sensor_config[CONF_ACCURACY_DECIMALS]))
+
+    # wir erlauben das Filtern
+    await sensor.setup_sensor_filters(sens, sensor_config)
+
+
     var = cg.new_Pvariable(
         sensor_config[CONF_SENSOR_POLLING_COMPONENT_ID],  
         parent,
