@@ -12,6 +12,7 @@ from esphome.const import (
     CONF_STATE_CLASS,
     CONF_UPDATE_INTERVAL,
     CONF_UNIT_OF_MEASUREMENT,
+    CONF_ACCURACY_DECIMALS
 )
 
 # WR3223 Namespace holen (bereits in __init__.py definiert)
@@ -61,19 +62,23 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(k, default={}): cv.Schema({        
             cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                             
             cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
+            cv.Optional(CONF_ACCURACY_DECIMALS, default=1): cv.int_,
         }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s"))
         for k in SENSOR_COMMANDS.keys()
     }),
 
     # **Benutzerdefinierte Sensoren (MÜSSEN genau 2 Zeichen haben + Pflichtfelder)**
     cv.Optional(CONF_SENSORS_CUSTOM, default=[]): cv.ensure_list(
-        sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT).extend(
+        sensor.sensor_schema(
+            state_class=STATE_CLASS_MEASUREMENT,
+            accuracy_decimals=1
+            ).extend(
             {
                 cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
                 cv.Required(CONF_COMMAND): cv.All(cv.string, validate_custom_command),
                 cv.Required(CONF_NAME): cv._validate_entity_name,
-                cv.Required(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
-                cv.Required(CONF_DEVICE_CLASS): sensor.validate_device_class,
+                cv.Optional(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
+                cv.Optional(CONF_DEVICE_CLASS): sensor.validate_device_class,
             }
         ).extend(cv.polling_component_schema("60s")),
     ),
