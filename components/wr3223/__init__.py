@@ -45,13 +45,13 @@ CONFIG_SCHEMA = cv.Schema({
             CONF_NAME: "FEHLER", 
             CONF_DEVICE_CLASS: DEVICE_CLASS_PROBLEM, 
             CONF_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
-            }): binary_sensor.BINARY_SENSOR_SCHEMA.extend({
+            }): binary_sensor.binary_sensor_schema().extend({
                 cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Option zum Deaktivieren
         }),
         cv.Optional(CONF_ERROR_TEXT, default={
             CONF_NAME: "FEHLER Text",            
             CONF_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC
-        }): text_sensor.TEXT_SENSOR_SCHEMA.extend({
+        }): text_sensor.text_sensor_schema().extend({
             cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Option zum Deaktivieren
         }), 
     }),
