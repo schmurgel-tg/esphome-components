@@ -308,10 +308,15 @@ namespace esphome
           ESP_LOGW(TAG,
                    "Kommando %s wurde zu oft nicht beantwortet und wird entfernt.",
                    req.first.c_str());
+
+          // Sicherstellen, dass wir den Callback nach dem Entfernen weiterhin
+          // aufrufen koennen
+          auto cb = req.second.callback;
           it = request_map_.erase(it);
-          if (req.second.callback)
-            req.second.callback((char *)"", false);
           
+          if (cb)
+            cb((char *)"", false);
+
           continue;
         }
 
