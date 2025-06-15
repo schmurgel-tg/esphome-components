@@ -184,11 +184,24 @@ namespace esphome
       char answer_buffer[16]; // Temporärer Buffer
       int answer_length = readAnswer(answer_buffer, sizeof(answer_buffer));
 
+      bool is_write = request_map_[current_command_].is_write;
+      if (is_write)
+      {
+        // Bei Schreibkommandos nur auf ACK/NAK prüfen
+        const char *resp = (answer_buffer[0] == MessageControl::ACK) ? "ACK" : "NAK";
+        request_map_[current_command_].callback((char *)resp);
+        ESP_LOGD(TAG, "Schreibantwort fuer %s: %s", current_command_.c_str(), resp);
+        request_map_.erase(current_command_);
+        error_count_map_[current_command_] = 0;
+        current_command_.clear();
+        return;
+      }
+
       if (answer_length < 3)
       {
         ESP_LOGW(TAG, "Ungültige Antwort empfangen - wird ignoriert.");
         error_count_map_[current_command_]++;
-        current_command_ = "";
+        current_command_.clear();
         return;
       }
 
@@ -201,7 +214,7 @@ namespace esphome
       {
         ESP_LOGE(TAG, "Checksumme fehlerhaft! Erwartet %x, erhalten %x.", calculated_checksum, received_checksum);
         error_count_map_[current_command_]++;
-        current_command_ = "";
+        current_command_.clear();
         return;
       }
 
@@ -236,12 +249,10 @@ namespace esphome
       }
       else
       {
-        ESP_LOGW(TAG,
-                 "Antwort für %s erhalten, aber kein passender Request gefunden!",
-                 received_cmd.c_str());
+        ESP_LOGW(TAG, "Antwort für %s erhalten, aber kein passender Request gefunden!", received_cmd.c_str());
       }
       // Jetzt das nächste Kommando senden
-      current_command_ = "";
+      current_command_.clear();
     }
 
     void WR3223Connector::send_next_request()
