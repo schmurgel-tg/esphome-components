@@ -126,7 +126,7 @@ namespace esphome
       return -1; // Falls Timeout erreicht wurde
     }
 
-    void WR3223Connector::send_request(const char *command, std::function<void(char *answer)> callback)
+    void WR3223Connector::send_request(const char *command, std::function<void(char *answer, bool success)> callback)
     {
       std::string cmd_key(command); // `std::string` aus `char *` erstellen
 
@@ -151,7 +151,7 @@ namespace esphome
                (unsigned)request_map_.size());
     }
 
-    void WR3223Connector::send_write_request(const char *command, const std::string &data, std::function<void(char *answer)> callback)
+    void WR3223Connector::send_write_request(const char *command, const std::string &data, std::function<void(char *answer, bool success)> callback)
     {
       std::string cmd_key(command);
       if (request_map_.count(cmd_key))
@@ -187,7 +187,8 @@ namespace esphome
         if (!current_command_.empty() &&
             millis() - request_map_[current_command_].last_sent > 1000)
         {
-          ESP_LOGW(TAG, "Timeout für %s! Setze current_command zurück.", current_command_.c_str());
+          ESP_LOGW(TAG, "Timeout für %s!", current_command_.c_str());
+          error_count_map_[current_command_]++;
           current_command_.clear();
         }
 
@@ -210,7 +211,7 @@ namespace esphome
         int resp_byte = read();
         ESP_LOGD(TAG, "Empfangenes ACK/NAK-Byte: 0x%02X", resp_byte);
         const char *resp = (resp_byte == MessageControl::ACK) ? "ACK" : "NAK";
-        it_req->second.callback((char *)resp);
+        it_req->second.callback((char *)resp, resp_byte == MessageControl::ACK);
         ESP_LOGD(TAG, "Schreibantwort fuer %s: %s", current_command_.c_str(), resp);
         request_map_.erase(it_req);
         error_count_map_[current_command_] = 0;
@@ -265,7 +266,7 @@ namespace esphome
         }
 
         // Callback nur mit Datenbereich aufrufen
-        request_map_[received_cmd].callback(data);
+        request_map_[received_cmd].callback(data, true);
 
         ESP_LOGD(TAG, "Antwort für %s verarbeitet: %s", received_cmd.c_str(), data);
 
@@ -304,8 +305,10 @@ namespace esphome
         if (error_count_map_[req.first] >= 3)
         {
           ESP_LOGW(TAG,
-                   "Kommando %s wurde zu oft nicht beantwortet und wird ignoriert.",
+                   "Kommando %s wurde zu oft nicht beantwortet und wird entfernt.",
                    req.first.c_str());
+          if (req.second.callback)
+            req.second.callback((char *)"", false);
           it = request_map_.erase(it);
           continue;
         }

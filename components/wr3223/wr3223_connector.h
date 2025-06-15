@@ -25,8 +25,8 @@ namespace esphome
       void setup() override;
       void loop() override;
 
-      void send_request(const char *command, std::function<void(char *answer)> callback);
-      void send_write_request(const char *command, const std::string &data, std::function<void(char *answer)> callback);
+      void send_request(const char *command, std::function<void(char *answer, bool success)> callback);
+      void send_write_request(const char *command, const std::string &data, std::function<void(char *answer, bool success)> callback);
 
     private:
       int readAnswer(char *buffer, int len);
@@ -35,10 +35,10 @@ namespace esphome
 
       struct CallbackInfo
       {
-        uint32_t last_sent;                         // Zeitpunkt der Anfrage
-        std::function<void(char *answer)> callback; // Callback bei Antwort
-        bool is_write = false;                      // Schreibkommando?
-        std::string data;                           // Daten zum Schreiben
+        uint32_t last_sent;                                       // Zeitpunkt der Anfrage
+        std::function<void(char *answer, bool success)> callback; // Callback bei Antwort
+        bool is_write = false;                                    // Schreibkommando?
+        std::string data;                                         // Daten zum Schreiben
       };
 
       std::unordered_map<std::string, CallbackInfo> request_map_; // Dictionary für Requests
