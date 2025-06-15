@@ -37,6 +37,11 @@ CONF_ERROR_STATUS = "error_status_sensor"
 CONF_ERROR_TEXT = "error_text_sensor"
 CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
 
+def validate_status_interval(value):
+    value = cv.update_interval(value)
+    if value.total_milliseconds > 20000:
+        raise cv.Invalid("Status update interval must not exceed 20s")
+    return value
 
 # YAML-Validierung für ESPHome
 CONFIG_SCHEMA = cv.Schema({
@@ -45,7 +50,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_WR3223_ERROR_COMPONENT_ID): cv.declare_id(WR3223ErrorComponent),
     cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.declare_id(WR3223StatusComponent),
     cv.GenerateID(CONF_WR3223_STATUS_HOLDER_ID): cv.declare_id(WR3223StatusValueHolder),
-    cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): cv.update_interval,
+    cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): validate_status_interval,
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
         cv.Optional(CONF_UPDATE_INTERVAL, default="60s"): cv.update_interval,
