@@ -202,9 +202,11 @@ void WR3223Connector::send_next_request() {
     return;
   }
 
-  for (auto &req : request_map_) {
+  for (auto it = request_map_.begin(); it != request_map_.end(); ) {
+    auto &req = *it;
     // Prüfen, ob die letzte Anfrage vor mindestens 500 ms gesendet wurde
     if (millis() - req.second.last_sent < 500) {
+      ++it;
       continue;
     }
 
@@ -213,7 +215,7 @@ void WR3223Connector::send_next_request() {
       ESP_LOGW(TAG,
                "Kommando %s wurde zu oft nicht beantwortet und wird ignoriert.",
                req.first.c_str());
-      request_map_.erase(req.first);
+      it = request_map_.erase(it);
       continue;
     }
 
