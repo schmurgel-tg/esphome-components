@@ -181,21 +181,21 @@ namespace esphome
         return;
       }
 
-      char answer_buffer[16]; // Temporärer Buffer
-      int answer_length = readAnswer(answer_buffer, sizeof(answer_buffer));
-
       bool is_write = request_map_[current_command_].is_write;
       if (is_write)
       {
         // Bei Schreibkommandos nur auf ACK/NAK prüfen
-        const char *resp = (answer_buffer[0] == MessageControl::ACK) ? "ACK" : "NAK";
+        int resp_byte = read();
+        const char *resp = (resp_byte == MessageControl::ACK) ? "ACK" : "NAK";
         request_map_[current_command_].callback((char *)resp);
         ESP_LOGD(TAG, "Schreibantwort fuer %s: %s", current_command_.c_str(), resp);
         request_map_.erase(current_command_);
         error_count_map_[current_command_] = 0;
-        current_command_.clear();
         return;
       }
+
+      char answer_buffer[16]; // Temporärer Buffer
+      int answer_length = readAnswer(answer_buffer, sizeof(answer_buffer));
 
       if (answer_length < 3)
       {
@@ -289,19 +289,31 @@ namespace esphome
 
         if (req.second.is_write)
         {
-          // STX+C1+C2+DATA+ETX+CHK
+          // Aufbau: EOT + ADR + STX + C1 + C2 + DATA... + ETX + CHK
           size_t len = req.second.data.size();
-          std::vector<uint8_t> msg(5 + len); // STX, C1, C2, DATA..., ETX, CHK
-          msg[0] = MessageControl::STX;
-          msg[1] = req.first[0];
-          msg[2] = req.first[1];
+          std::vector<uint8_t> msg(10 + len); // 5 Header + STX + 2 Cmd + data + ETX + CHK
+
+          // Adressierung und STX
+          msg[0] = MessageControl::EOT;
+          msg[1] = 0x30; // Zehnerstelle ("0")
+          msg[2] = 0x30; // Zehnerstelle wiederholen
+          msg[3] = 0x31; // Einerstelle ("1")
+          msg[4] = 0x31; // Einerstelle wiederholen
+          msg[5] = MessageControl::STX;
+
+          // Kommando
+          msg[6] = req.first[0];
+          msg[7] = req.first[1];
+
           for (size_t i = 0; i < len; i++)
           {
-            msg[3 + i] = req.second.data[i];
+            msg[8 + i] = req.second.data[i];
           }
-          msg[3 + len] = MessageControl::ETX;
-          uint8_t chk = buildCheckSum((char *)msg.data(), 1, 3 + len);
-          msg[4 + len] = chk;
+          // Abschluss
+          msg[8 + len] = MessageControl::ETX;
+          uint8_t chk = buildCheckSum((char *)msg.data(), 6, 8 + len);
+          msg[9 + len] = chk;
+          
           write_array(msg.data(), msg.size());
           flush();
           ESP_LOGD(TAG, "Schreibkommando %s gesendet.", req.first.c_str());
