@@ -16,6 +16,18 @@ namespace esphome
     /// @brief Wird über den RelaisDecoder aktualisiert
     bool bedienteilAktiv = true;
 
+    static std::string bytes_to_hex(const uint8_t *data, size_t len)
+    {
+      char buf[4];
+      std::string out;
+      for (size_t i = 0; i < len; i++)
+      {
+        snprintf(buf, sizeof(buf), "%02X ", data[i]);
+        out += buf;
+      }
+      return out;
+    }
+
     /// @brief Berechnet die Checksumme einer Antwort.
     /// @param answer Die Antwort als Byte-Array
     /// @param start Startposition
@@ -135,7 +147,8 @@ namespace esphome
       info.data = "";
       request_map_[cmd_key] = info;
 
-      ESP_LOGD(TAG, "Neues Kommando %s zur Queue hinzugefügt.", command);
+      ESP_LOGD(TAG, "Neues Kommando %s zur Queue hinzugefügt (gesamt %u).", command,
+               (unsigned)request_map_.size());
     }
 
     void WR3223Connector::send_write_request(const char *command, const std::string &data, std::function<void(char *answer)> callback)
@@ -152,7 +165,9 @@ namespace esphome
       info.is_write = true;
       info.data = data;
       request_map_[cmd_key] = info;
-      ESP_LOGD(TAG, "Neues Schreibkommando %s=%s zur Queue hinzugefügt.", command, data.c_str());
+      ESP_LOGD(TAG,
+               "Neues Schreibkommando %s=%s zur Queue hinzugefügt (gesamt %u).",
+               command, data.c_str(), (unsigned)request_map_.size());
     }
 
     void WR3223Connector::setup()
@@ -162,15 +177,18 @@ namespace esphome
 
     void WR3223Connector::loop()
     {
+      bool has_data = available();
+      ESP_LOGV(TAG, "Loop: cmd=%s available=%d queue=%u", current_command_.c_str(),
+               has_data, (unsigned)request_map_.size());
 
-      if (!available())
+      if (!has_data)
       {
         // Falls ein Kommando zu lange keine Antwort bekam, zurücksetzen
         if (!current_command_.empty() &&
             millis() - request_map_[current_command_].last_sent > 1000)
         {
           ESP_LOGW(TAG, "Timeout für %s! Setze current_command zurück.", current_command_.c_str());
-          current_command_ = "";
+          current_command_.clear();
         }
 
         // Falls kein aktives Kommando mehr läuft, das nächste senden
@@ -181,16 +199,24 @@ namespace esphome
         return;
       }
 
-      bool is_write = request_map_[current_command_].is_write;
+      bool is_write = false;
+      auto it_req = request_map_.find(current_command_);
+      if (it_req != request_map_.end())
+        is_write = it_req->second.is_write;
+
       if (is_write)
       {
-        // Bei Schreibkommandos nur auf ACK/NAK prüfen
+        // Bei Schreibkommandos gibt es nur ein einzelnes ACK/NAK-Byte
         int resp_byte = read();
+        ESP_LOGD(TAG, "Empfangenes ACK/NAK-Byte: 0x%02X", resp_byte);
         const char *resp = (resp_byte == MessageControl::ACK) ? "ACK" : "NAK";
-        request_map_[current_command_].callback((char *)resp);
+        it_req->second.callback((char *)resp);
         ESP_LOGD(TAG, "Schreibantwort fuer %s: %s", current_command_.c_str(), resp);
-        request_map_.erase(current_command_);
+        request_map_.erase(it_req);
         error_count_map_[current_command_] = 0;
+        current_command_.clear();
+        while (available())
+          read();
         return;
       }
 
@@ -287,6 +313,9 @@ namespace esphome
         req.second.last_sent = millis(); // Zeitstempel aktualisieren
         current_command_ = req.first;    // Jetzt läuft dieses Kommando
 
+        ESP_LOGD(TAG, "Sende Kommando %s (write=%d)", current_command_.c_str(),
+                 req.second.is_write);
+
         if (req.second.is_write)
         {
           // Aufbau: EOT + ADR + STX + C1 + C2 + DATA... + ETX + CHK
@@ -313,10 +342,11 @@ namespace esphome
           msg[8 + len] = MessageControl::ETX;
           uint8_t chk = buildCheckSum((char *)msg.data(), 6, 8 + len);
           msg[9 + len] = chk;
-          
+
           write_array(msg.data(), msg.size());
           flush();
-          ESP_LOGD(TAG, "Schreibkommando %s gesendet.", req.first.c_str());
+          ESP_LOGD(TAG, "Schreibkommando %s gesendet: %s", req.first.c_str(),
+                   bytes_to_hex(msg.data(), msg.size()).c_str());
         }
         else
         {
@@ -336,7 +366,8 @@ namespace esphome
 
           write_array(message, 8);
           flush();
-          ESP_LOGD(TAG, "Kommando %s gesendet.", req.first.c_str());
+          ESP_LOGD(TAG, "Kommando %s gesendet: %s", req.first.c_str(),
+                   bytes_to_hex(message, sizeof(message)).c_str());
         }
         return; // Nur ein Kommando senden, dann beenden
       }
