@@ -25,7 +25,7 @@ namespace esphome
             if (parent_ == nullptr || parent_->connector_ == nullptr ||
                 holder_ == nullptr)
                 return;
-            std::string data = WR3223Helper::to_bitwise(holder_->getSwStatus());
+            std::string data = std::to_string(holder_->getSwStatus());
             parent_->connector_->send_write_request(
                 WR3223Commands::SW, data,
                 [this](char *answer, bool success)
