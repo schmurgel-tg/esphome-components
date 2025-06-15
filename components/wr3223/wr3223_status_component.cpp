@@ -25,21 +25,24 @@ namespace esphome
             if (parent_ == nullptr || parent_->connector_ == nullptr ||
                 holder_ == nullptr)
                 return;
+
             std::string data = std::to_string(holder_->getSwStatus());
             parent_->connector_->send_write_request(
                 WR3223Commands::SW, data,
                 [this](char *answer, bool success)
                 {
                     ESP_LOGD(TAG, "Status write response: %s success=%d", answer, success);
-
-                    parent_->connector_->send_request(
-                        WR3223Commands::SW,
-                        [this](char *resp, bool ok)
-                        {
-                            ESP_LOGD(TAG, "Status readback: %s success=%d", resp, ok);
-                            if (ok && holder_->setSWStatus(resp))
-                                holder_->save_state_sw();
-                        });
+                    if (!success) // bei misserfolg schreiben wir den echten Wert zurück
+                    {
+                        parent_->connector_->send_request(
+                            WR3223Commands::SW,
+                            [this](char *resp, bool ok)
+                            {
+                                ESP_LOGD(TAG, "Status readback: %s success=%d", resp, ok);
+                                if (ok)
+                                    holder_->setSWStatus(resp);
+                            });
+                    }
                 });
         }
 
