@@ -19,6 +19,8 @@ wr3223_ns = cg.esphome_ns.namespace("wr3223")
 WR3223 = wr3223_ns.class_("WR3223", cg.PollingComponent)
 WR3223Connector = wr3223_ns.class_("WR3223Connector", cg.Component)
 WR3223ErrorComponent = wr3223_ns.class_("WR3223ErrorComponent", cg.PollingComponent)
+WR3223StatusValueHolder = wr3223_ns.class_("WR3223StatusValueHolder")
+WR3223StatusComponent = wr3223_ns.class_("WR3223StatusComponent", cg.PollingComponent)
 
 
 # Automatisches Laden des UART-Moduls
@@ -27,16 +29,23 @@ AUTO_LOAD = ["uart", "text_sensor", "binary_sensor", "switch", "select"]
 CONF_WR3223_ID = "wr3223_id"
 CONF_WR3223_CONNECTOR_ID = "wr3223_connector_id"
 CONF_WR3223_ERROR_COMPONENT_ID = "wr3223_error_component_id"
+CONF_WR3223_STATUS_COMPONENT_ID = "wr3223_status_component_id"
+CONF_WR3223_STATUS_HOLDER_ID = "wr3223_status_holder_id"
 CONF_DEACTIVATE = "deactivate"
 CONF_ERROR_POLLING = "error_polling"
 CONF_ERROR_STATUS = "error_status_sensor"
 CONF_ERROR_TEXT = "error_text_sensor"
+CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
+
 
 # YAML-Validierung für ESPHome
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_WR3223_ID): cv.declare_id(WR3223),    
     cv.GenerateID(CONF_WR3223_CONNECTOR_ID): cv.declare_id(WR3223Connector),
     cv.GenerateID(CONF_WR3223_ERROR_COMPONENT_ID): cv.declare_id(WR3223ErrorComponent),
+    cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.declare_id(WR3223StatusComponent),
+    cv.GenerateID(CONF_WR3223_STATUS_HOLDER_ID): cv.declare_id(WR3223StatusValueHolder),
+    cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): cv.update_interval,
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
         cv.Optional(CONF_UPDATE_INTERVAL, default="60s"): cv.update_interval,
@@ -69,6 +78,14 @@ async def to_code(config):
     
     await cg.register_component(connector, {})
 
+    holder = cg.new_Pvariable(config[CONF_WR3223_STATUS_HOLDER_ID])
+    status_component = cg.new_Pvariable(
+        config[CONF_WR3223_STATUS_COMPONENT_ID],
+        var,
+        config[CONF_STATUS_UPDATE_INTERVAL],
+        holder,
+    )
+    await cg.register_component(status_component, {})
 
     error_polling = config.get(CONF_ERROR_POLLING)        
     
