@@ -304,12 +304,14 @@ namespace esphome
         // Prüfen, ob dieses Kommando zu oft fehlgeschlagen ist
         if (error_count_map_[req.first] >= 3)
         {
+          error_count_map_[req.first] = 0;
           ESP_LOGW(TAG,
                    "Kommando %s wurde zu oft nicht beantwortet und wird entfernt.",
                    req.first.c_str());
+          it = request_map_.erase(it);
           if (req.second.callback)
             req.second.callback((char *)"", false);
-          it = request_map_.erase(it);
+          
           continue;
         }
 
