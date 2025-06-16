@@ -70,14 +70,22 @@ namespace esphome
 
       int getVentilationLevel() const
       {
-        if (stateValueSW & WR3223EnumStatusSW::VENT_LEVEL_0)
+        int mask = WR3223EnumStatusSW::VENT_LEVEL_0 |
+                   WR3223EnumStatusSW::VENT_LEVEL_1 |
+                   WR3223EnumStatusSW::VENT_LEVEL_2 |
+                   WR3223EnumStatusSW::VENT_LEVEL_3;
+
+        int level_bits = stateValueSW & mask;
+
+        if (level_bits == WR3223EnumStatusSW::VENT_LEVEL_0)
           return 0;
-        if (stateValueSW & WR3223EnumStatusSW::VENT_LEVEL_1)
+        if (level_bits == WR3223EnumStatusSW::VENT_LEVEL_1)
           return 1;
-        if (stateValueSW & WR3223EnumStatusSW::VENT_LEVEL_2)
+        if (level_bits == WR3223EnumStatusSW::VENT_LEVEL_2)
           return 2;
-        if (stateValueSW & WR3223EnumStatusSW::VENT_LEVEL_3)
+        if (level_bits == WR3223EnumStatusSW::VENT_LEVEL_3)
           return 3;
+
         return 0;
       }
 
