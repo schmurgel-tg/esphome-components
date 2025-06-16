@@ -28,9 +28,8 @@ CONFIG_SCHEMA = (
 
 
 async def to_code(config):
-    relais = await cg.get_variable(config[CONF_WR3223_RELAIS_COMPONENT_ID])
-    conf = config[CONF_ID]
-    if not conf.get(CONF_DEACTIVATE):
-        var = cg.new_Pvariable(conf, relais)
+    relais = await cg.get_variable(config[CONF_WR3223_RELAIS_COMPONENT_ID])    
+    if not config.get(CONF_DEACTIVATE):
+        var = cg.new_Pvariable(config, relais)
         await cg.register_component(var, config)
         await button.register_button(var, config)
