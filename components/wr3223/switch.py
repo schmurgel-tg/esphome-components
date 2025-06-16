@@ -12,7 +12,9 @@ from . import (
 
 WR3223StatusSwitch = wr3223_ns.class_("WR3223StatusSwitch", switch.Switch, cg.Component)
 WR3223HeatPumpSwitch = wr3223_ns.class_("WR3223HeatPumpSwitch", WR3223StatusSwitch)
-WR3223AdditionalHeatingSwitch = wr3223_ns.class_("WR3223AdditionalHeatingSwitch", WR3223StatusSwitch)
+WR3223AdditionalHeatingSwitch = wr3223_ns.class_(
+    "WR3223AdditionalHeatingSwitch", WR3223StatusSwitch
+)
 WR3223CoolingSwitch = wr3223_ns.class_("WR3223CoolingSwitch", WR3223StatusSwitch)
 
 CONF_SWITCHES = "switches"
@@ -21,9 +23,9 @@ CONF_ADDITIONAL_HEATING = "additional_heating"
 CONF_COOLING = "cooling"
 
 
-def _switch_schema(class_, default_name: str):
+def _switch_schema(class_, default_name: str, default_icon: str):
     return (
-        switch.switch_schema(class_)
+        switch.switch_schema(class_, icon=default_icon)
         .extend({cv.Optional(CONF_NAME, default=default_name): cv.string_strict})
         .extend({cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean})
         .extend(cv.COMPONENT_SCHEMA)
@@ -32,12 +34,26 @@ def _switch_schema(class_, default_name: str):
 
 CONFIG_SCHEMA = cv.Schema(
     {
-        cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.use_id(WR3223StatusComponent),
+        cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.use_id(
+            WR3223StatusComponent
+        ),
         cv.Optional(CONF_SWITCHES, default={}): cv.Schema(
             {
-                cv.Optional(CONF_HEAT_PUMP, default={}): _switch_schema(WR3223HeatPumpSwitch, "Wärmepumpe"),
-                cv.Optional(CONF_ADDITIONAL_HEATING, default={}): _switch_schema(WR3223AdditionalHeatingSwitch, "Zusatzheizung"),
-                cv.Optional(CONF_COOLING, default={}): _switch_schema(WR3223CoolingSwitch, "Kühlung"),
+                cv.Optional(CONF_HEAT_PUMP, default={}): _switch_schema(
+                    WR3223HeatPumpSwitch,
+                    "Wärmepumpe",
+                    "mdi:heat-pump-outline",
+                ),
+                cv.Optional(CONF_ADDITIONAL_HEATING, default={}): _switch_schema(
+                    WR3223AdditionalHeatingSwitch,
+                    "Zusatzheizung",
+                    "mdi:heat-wave",
+                ),
+                cv.Optional(CONF_COOLING, default={}): _switch_schema(
+                    WR3223CoolingSwitch,
+                    "Kühlung",
+                    "mdi:snowflake",
+                ),
             }
         ),
     }
@@ -51,7 +67,7 @@ async def to_code(config):
     async def build(key, class_):
         conf = switches_conf.get(key, {})
         if conf.get(CONF_DEACTIVATE):
-            return        
+            return
         var = await switch.new_switch(conf)
         await cg.register_component(var, conf)
         cg.add(var.set_status_component(status_comp))

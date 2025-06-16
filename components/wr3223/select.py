@@ -16,7 +16,7 @@ WR3223VentilationLevelSelect = wr3223_ns.class_(
     "WR3223VentilationLevelSelect", select.Select, cg.Component
 )
 
-DEFAULT_OPTIONS = ["AUS", "Luftstufe 1", "Luftstufe 2", "Luftstufe 3"]
+DEFAULT_VENTILATION_LEVEL_OPTIONS = ["AUS", "Luftstufe 1", "Luftstufe 2", "Luftstufe 3"]
 
 CONF_SELECTS = "selects"
 CONF_VENTILATION_LEVEL = "ventilation_level"
@@ -27,7 +27,7 @@ VENTILATION_LEVEL_SCHEMA = (
         {
             cv.Optional(CONF_NAME, default="Lüftungsstufe"): cv.string_strict,            
             cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,
-            cv.Optional(CONF_OPTIONS, default=DEFAULT_OPTIONS): cv.All(
+            cv.Optional(CONF_OPTIONS, default=DEFAULT_VENTILATION_LEVEL_OPTIONS): cv.All(
                 cv.ensure_list(cv.string_strict), cv.Length(min=4, max=4)
             ),
         }
@@ -60,5 +60,5 @@ async def to_code(config):
         )
         await cg.register_component(var, vent_conf)
         await select.register_select(
-            var, vent_conf, options=vent_conf.get(CONF_OPTIONS, DEFAULT_OPTIONS)
+            var, vent_conf, options=vent_conf.get(CONF_OPTIONS, DEFAULT_VENTILATION_LEVEL_OPTIONS)
         )
