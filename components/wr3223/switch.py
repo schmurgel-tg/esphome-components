@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import switch
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_NAME
 
 from . import (
     WR3223StatusComponent,
@@ -47,14 +47,15 @@ async def to_code(config):
     status_comp = await cg.get_variable(config[CONF_WR3223_STATUS_COMPONENT_ID])
     switches_conf = config.get(CONF_SWITCHES, {})
 
-    async def build(key, class_):
+    async def build(key, class_, default_name):
         conf = switches_conf.get(key, {})
         if conf.get(CONF_DEACTIVATE):
             return
+        conf.setdefault(CONF_NAME, default_name)
         var = await switch.new_switch(conf)
         await cg.register_component(var, conf)
         cg.add(var.set_status_component(status_comp))
 
-    await build(CONF_HEAT_PUMP, WR3223HeatPumpSwitch)
-    await build(CONF_ADDITIONAL_HEATING, WR3223AdditionalHeatingSwitch)
-    await build(CONF_COOLING, WR3223CoolingSwitch)
+    await build(CONF_HEAT_PUMP, WR3223HeatPumpSwitch, "Wärmepumpe")
+    await build(CONF_ADDITIONAL_HEATING, WR3223AdditionalHeatingSwitch, "Zusatzheizung")
+    await build(CONF_COOLING, WR3223CoolingSwitch, "Kühlung")

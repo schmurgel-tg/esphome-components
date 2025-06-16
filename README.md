@@ -107,7 +107,7 @@ binary_sensor:
 # Lüftungsstufe konfigurieren
 
 Die WR3223-Komponente erstellt standardmäßig ein `select` zur Wahl der Lüftungsstufe. 
-Die vier Optionen `AUS`, `1`, `2` und `3` sind bereits vorkonfiguriert. 
+Die vier Optionen `AUS`, `Luftstufe 1`, `Luftstufe 2` und `Luftstufe 3` sind bereits vorkonfiguriert. 
 
 Soll das Select angepasst oder ganz abgeschaltet werden, kann dies über den Bereich `selects:` erfolgen:
 
@@ -117,8 +117,8 @@ select:
     selects:
       ventilation_level:
         # deactivate: true  # falls das Dropdown nicht benötigt wird
-        options: ["AUS", "1", "2", "3"]
-        update_interval: 30s
+        options: ["AUS", "1", "2", "3"] # optionales überschreiben der Anzeigwerte der Luftstufen
+        # wird automatisch über die Status-Komponente aktualisiert -> kein UpdateIntervall
 ```
 
 # Status-Schalter

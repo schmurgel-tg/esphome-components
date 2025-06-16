@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import select
-from esphome.const import CONF_ID, CONF_OPTIONS
+from esphome.const import CONF_ID, CONF_OPTIONS, CONF_NAME
 
 from . import (
     WR3223,
@@ -54,6 +54,7 @@ async def to_code(config):
 
     vent_conf = selects_conf.get(CONF_VENTILATION_LEVEL, {})
     if not vent_conf.get(CONF_DEACTIVATE):
+        vent_conf.setdefault(CONF_NAME, "Lüftungsstufe")
         var = cg.new_Pvariable(
             vent_conf[CONF_ID], parent, status_comp
         )
