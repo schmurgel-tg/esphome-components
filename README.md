@@ -63,6 +63,9 @@ binary_sensor:
 
 select:
   - platform: wr3223
+
+switch:
+  - platform: wr3223
 ```
 
 ## Detailkonfiguration
@@ -101,7 +104,7 @@ binary_sensor:
         entity_category: "config"
 ```
 
-## Lüftungsstufe konfigurieren
+# Lüftungsstufe konfigurieren
 
 Die WR3223-Komponente erstellt standardmäßig ein `select` zur Wahl der Lüftungsstufe. 
 Die vier Optionen `AUS`, `1`, `2` und `3` sind bereits vorkonfiguriert. 
@@ -116,6 +119,24 @@ select:
         # deactivate: true  # falls das Dropdown nicht benötigt wird
         options: ["AUS", "1", "2", "3"]
         update_interval: 30s
+```
+
+# Status-Schalter
+
+Zusätzlich legt die Komponente drei Schalter an, mit denen sich Wärmepumpe,
+Zusatzheizung und Kühlung ein- oder ausschalten lassen. Bei Bedarf können die
+Schalter deaktiviert werden:
+
+```yaml
+switch:
+  - platform: wr3223
+    switches:
+      heat_pump:
+        # deactivate: true
+      additional_heating:
+        # deactivate: true
+      cooling:
+        # deactivate: true
 ```
 
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  

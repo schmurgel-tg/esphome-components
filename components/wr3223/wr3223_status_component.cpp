@@ -16,6 +16,7 @@ namespace esphome
             {
                 holder_->restore_state_sw();
             }
+            notify_controls();
             write_status();
         }
 
@@ -36,7 +37,10 @@ namespace esphome
                     {
                         ESP_LOGD(TAG, "Status readback: %s success=%d", resp, ok);
                         if (ok)
+                        {
                             holder_->setSWStatus(resp);
+                            notify_controls();
+                        }
                     });
                 return;
             }
@@ -55,10 +59,28 @@ namespace esphome
                             {
                                 ESP_LOGD(TAG, "Status readback: %s success=%d", resp, ok);
                                 if (ok)
+                                {
                                     holder_->setSWStatus(resp);
+                                    notify_controls();
+                                }
                             });
                     }
+                    else
+                    {
+                        if (holder_ != nullptr)
+                            holder_->save_state_sw();
+                        notify_controls();
+                    }
                 });
+        }
+
+        void WR3223StatusComponent::notify_controls()
+        {
+            for (auto *ctrl : controls_)
+            {
+                if (ctrl != nullptr)
+                    ctrl->on_status(holder_);
+            }
         }
 
     } // namespace wr3223

@@ -16,7 +16,7 @@ WR3223VentilationLevelSelect = wr3223_ns.class_(
     "WR3223VentilationLevelSelect", select.Select, cg.PollingComponent
 )
 
-DEFAULT_OPTIONS = ["AUS", "1", "2", "3"]
+DEFAULT_OPTIONS = ["AUS", "Luftstufe 1", "Luftstufe 2", "Luftstufe 3"]
 
 CONF_SELECTS = "selects"
 CONF_VENTILATION_LEVEL = "ventilation_level"
