@@ -165,5 +165,32 @@ switch:
         # deactivate: true
 ```
 
+# Speicherung und Wiederherstellung des Betriebszustands
+
+Die `wr3223`-Komponente liest beim Start automatisch den zuletzt gespeicherten Modus sowie den Status der Schalter (z. B. Wärmepumpe, Zusatzheizung, Kühlung) aus dem Flash-Speicher (NVS) und stellt diese wieder her.
+
+Damit Änderungen auch nach einem Stromausfall oder Neustart erhalten bleiben, müssen sie explizit gespeichert werden. Hierfür stehen zwei Buttons zur Verfügung:
+
+**Config speichern** (save_state): Schreibt den aktuellen Modus und den Zustand der Status-Schalter dauerhaft in den Flash-Speicher.
+
+**Config laden** (restore_state): Stellt die zuletzt gespeicherten Werte aus dem Flash-Speicher wieder her (nützlich z. B. beim Zurücksetzen oder zur manuellen Wiederherstellung).
+
+Diese Buttons sind standardmäßig aktiviert und müssen nicht explizit konfiguriert werden. Die unten gezeigte Konfiguration dient zur optionalen Individualisierung (z. B. benutzerdefinierte Icons, Namen oder um die Buttons zu deaktivieren).
+
+```yaml
+button:
+  - platform: wr3223
+    buttons:
+      save_state:
+        name: "Konfiguration speichern"
+        icon: mdi:content-save
+      restore_state:
+        name: "Konfiguration laden"
+        icon: mdi:restore
+```
+
+**Hinweis:** Einstellungen wie individuelle Lüfterstufen-Drehzahlen oder andere "number"-Werte werden nicht gespeichert.
+
+
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  
 
