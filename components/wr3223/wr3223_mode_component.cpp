@@ -66,8 +66,6 @@ namespace esphome
                     }
                     else
                     {
-                        if (holder_ != nullptr)
-                            holder_->save_state();
                         notify_controls();
                     }
                 });
