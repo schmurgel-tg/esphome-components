@@ -1,8 +1,6 @@
 ## ESPHome-Komponenten für WR3223-Lüftungs-/Wärmepumpensteuerung
 Mit diesem Projekt kannst du eine Hermes WR 3223-basierte Heizungs- bzw. Lüftungssteuerung (Wärmepumpe, Lüfterstufen, Zusatzheizung etc.) über ESPHome in Home Assistant einbinden.
 
-**Achtung:** Im gegensatz zur alten Version, kann diese aktuell nur lesend auf die Hermes WR3223 zugreifen. Das steuern kommt in einem späteren Update.
-
 ### Funktionen im Überblick
 - Abfragen von Temperaturwerten (z.B. Verdampfer, Kondensator, Außenluft etc.)
 - Erfassen und Überwachen diverser Relaiszustände (Kompressor, Bypass, Zusatzheizung etc.)
