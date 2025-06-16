@@ -9,6 +9,7 @@ from . import (
     wr3223_ns,
     CONF_WR3223_ID,
     CONF_WR3223_STATUS_COMPONENT_ID,
+    CONF_DEACTIVATE
 )
 
 WR3223VentilationLevelSelect = wr3223_ns.class_(
@@ -17,12 +18,14 @@ WR3223VentilationLevelSelect = wr3223_ns.class_(
 
 DEFAULT_OPTIONS = ["AUS", "1", "2", "3"]
 
-CONFIG_SCHEMA = (
+CONF_SELECTS = "selects"
+CONF_VENTILATION_LEVEL = "ventilation_level"
+
+VENTILATION_LEVEL_SCHEMA = (
     select.select_schema(WR3223VentilationLevelSelect, icon="mdi:fan")
     .extend(
         {
-            cv.GenerateID(CONF_WR3223_ID): cv.use_id(WR3223),
-            cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.use_id(WR3223StatusComponent),
+            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,
             cv.Optional(CONF_UPDATE_INTERVAL, default="30s"): cv.update_interval,
             cv.Optional(CONF_OPTIONS, default=DEFAULT_OPTIONS): cv.All(
                 cv.ensure_list(cv.string_strict), cv.Length(min=4, max=4)
@@ -32,13 +35,30 @@ CONFIG_SCHEMA = (
     .extend(cv.polling_component_schema("30s"))
 )
 
+CONFIG_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(CONF_WR3223_ID): cv.use_id(WR3223),
+        cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.use_id(WR3223StatusComponent),
+        cv.Optional(CONF_SELECTS, default={CONF_VENTILATION_LEVEL: {}}): cv.Schema(
+            {
+                cv.Optional(CONF_VENTILATION_LEVEL, default={}): VENTILATION_LEVEL_SCHEMA,
+            }
+        ),
+    }
+).extend(cv.COMPONENT_SCHEMA)
+
 async def to_code(config):
     parent = await cg.get_variable(config[CONF_WR3223_ID])
     status_comp = await cg.get_variable(config[CONF_WR3223_STATUS_COMPONENT_ID])
-    var = cg.new_Pvariable(
-        config[CONF_ID], parent, config[CONF_UPDATE_INTERVAL], status_comp
-    )
-    await cg.register_component(var, config)
-    await select.register_select(
-        var, config, options=config.get(CONF_OPTIONS, DEFAULT_OPTIONS)
-    )
+
+    selects_conf = config.get(CONF_SELECTS, {})
+
+    vent_conf = selects_conf.get(CONF_VENTILATION_LEVEL, {})
+    if not vent_conf.get(CONF_DEACTIVATE):
+        var = cg.new_Pvariable(
+            vent_conf[CONF_ID], parent, vent_conf[CONF_UPDATE_INTERVAL], status_comp
+        )
+        await cg.register_component(var, vent_conf)
+        await select.register_select(
+            var, vent_conf, options=vent_conf.get(CONF_OPTIONS, DEFAULT_OPTIONS)
+        )

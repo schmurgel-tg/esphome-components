@@ -60,6 +60,9 @@ sensor:
 
 binary_sensor:
   - platform: wr3223
+
+select:
+  - platform: wr3223
 ```
 
 ## Detailkonfiguration
@@ -96,6 +99,23 @@ binary_sensor:
       bypass:
         name: "Relais: Bypass"
         entity_category: "config"
+```
+
+## Lüftungsstufe konfigurieren
+
+Die WR3223-Komponente erstellt standardmäßig ein `select` zur Wahl der Lüftungsstufe. 
+Die vier Optionen `AUS`, `1`, `2` und `3` sind bereits vorkonfiguriert. 
+
+Soll das Select angepasst oder ganz abgeschaltet werden, kann dies über den Bereich `selects:` erfolgen:
+
+```yaml
+select:
+  - platform: wr3223
+    selects:
+      ventilation_level:
+        # deactivate: true  # falls das Dropdown nicht benötigt wird
+        options: ["AUS", "1", "2", "3"]
+        update_interval: 30s
 ```
 
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  
