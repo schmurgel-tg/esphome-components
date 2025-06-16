@@ -68,6 +68,12 @@ number:
   - platform: wr3223
 ```
 
+## Minimalkonfig Screenshots:
+![Steuerelemente](images/wr3223_steuerelemente.png)
+![Sensoren](images/wr3223_sensoren.png)
+![Konfiguration](images/wr3223_konfiguration.png)
+![Diagnose](images/wr3223_diagnose.png)
+
 ## Detailkonfiguration
 ```yaml
 # Sensoren
