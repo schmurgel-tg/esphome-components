@@ -1,8 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import binary_sensor
-from esphome.const import (
-    CONF_ID,
+from esphome.const import (    
     CONF_DEVICE_CLASS,
     CONF_ENTITY_CATEGORY,
     CONF_FRIENDLY_NAME,
@@ -12,7 +11,13 @@ from esphome.const import (
 )
 
 # WR3223 Namespace holen (bereits in __init__.py definiert)
-from . import WR3223, CONF_WR3223_ID, CONF_DEACTIVATE, wr3223_ns
+from . import (
+    WR3223,
+    CONF_WR3223_ID,
+    CONF_DEACTIVATE,
+    CONF_WR3223_RELAIS_COMPONENT_ID,
+    wr3223_ns,
+)
 
 WR3223RelaisComponent = wr3223_ns.class_("WR3223RelaisComponent", cg.PollingComponent)
 
@@ -59,7 +64,9 @@ CONFIG_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(CONF_WR3223_ID): cv.use_id(WR3223),
-            cv.GenerateID(): cv.declare_id(WR3223RelaisComponent),
+            cv.GenerateID(CONF_WR3223_RELAIS_COMPONENT_ID): cv.declare_id(
+                WR3223RelaisComponent
+            ),
             cv.Optional(CONF_RELAIS_SENSORS, default={}): cv.Schema(
                 {
                     cv.Optional(k, default={}): RELAIS_SENSOR_SCHEMA
@@ -79,7 +86,9 @@ async def to_code(config):
     parent = await cg.get_variable(config[CONF_WR3223_ID])
 
     # WR3223RelaisComponent instanziieren und registrieren
-    var = cg.new_Pvariable(config[CONF_ID], parent, config[CONF_UPDATE_INTERVAL])
+    var = cg.new_Pvariable(
+        config[CONF_WR3223_RELAIS_COMPONENT_ID], parent, config[CONF_UPDATE_INTERVAL]
+    )
     await cg.register_component(var, config)
 
     relais_sensors = config.get(CONF_RELAIS_SENSORS, {})

@@ -26,7 +26,7 @@ WR3223ModeComponent = wr3223_ns.class_("WR3223ModeComponent", cg.PollingComponen
 
 
 # Automatisches Laden der Module
-AUTO_LOAD = ["uart", "text_sensor", "binary_sensor", "switch", "select", "number"]
+AUTO_LOAD = ["uart", "text_sensor", "binary_sensor", "switch", "select", "number", "button"]
 
 CONF_WR3223_ID = "wr3223_id"
 CONF_WR3223_CONNECTOR_ID = "wr3223_connector_id"
@@ -35,6 +35,7 @@ CONF_WR3223_STATUS_COMPONENT_ID = "wr3223_status_component_id"
 CONF_WR3223_STATUS_HOLDER_ID = "wr3223_status_holder_id"
 CONF_WR3223_MODE_COMPONENT_ID = "wr3223_mode_component_id"
 CONF_WR3223_MODE_HOLDER_ID = "wr3223_mode_holder_id"
+CONF_WR3223_RELAIS_COMPONENT_ID = "wr3223_relais_component_id"
 CONF_DEACTIVATE = "deactivate"
 CONF_ERROR_POLLING = "error_polling"
 CONF_ERROR_STATUS = "error_status_sensor"
