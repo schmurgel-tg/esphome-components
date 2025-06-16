@@ -7,6 +7,8 @@ from esphome.const import (
     CONF_MIN_VALUE,
     CONF_MAX_VALUE,
     CONF_STEP,
+    CONF_ENTITY_CATEGORY,
+    ENTITY_CATEGORY_CONFIG,
 )
 
 from . import WR3223, wr3223_ns, CONF_WR3223_ID, CONF_DEACTIVATE
@@ -35,6 +37,7 @@ def _speed_schema(default_name: str):
                 cv.Optional(CONF_MIN_VALUE, default=40): cv.int_,
                 cv.Optional(CONF_MAX_VALUE, default=100): cv.int_,
                 cv.Optional(CONF_STEP, default=1): cv.int_,
+                cv.Optional(CONF_ENTITY_CATEGORY, default=ENTITY_CATEGORY_CONFIG): cv.entity_category,
             }
         )
         .extend(cv.COMPONENT_SCHEMA)
