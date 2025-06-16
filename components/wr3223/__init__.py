@@ -23,7 +23,7 @@ WR3223StatusValueHolder = wr3223_ns.class_("WR3223StatusValueHolder")
 WR3223StatusComponent = wr3223_ns.class_("WR3223StatusComponent", cg.PollingComponent)
 
 
-# Automatisches Laden des UART-Moduls
+# Automatisches Laden der Module
 AUTO_LOAD = ["uart", "text_sensor", "binary_sensor", "switch", "select"]
 
 CONF_WR3223_ID = "wr3223_id"

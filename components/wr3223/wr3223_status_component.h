@@ -19,10 +19,14 @@ namespace esphome
 
             void setup() override;
             void update() override;
+            
+            /// @brief Expose the internally used value holder
+            WR3223StatusValueHolder *get_holder() const { return holder_; }
 
-        private:
+            /// @brief Write the current holder status to the device
             void write_status();
-
+            
+        private:            
             WR3223 *parent_;
             WR3223StatusValueHolder *holder_;
         };
