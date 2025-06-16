@@ -31,6 +31,8 @@ external_components:
       url: https://github.com/schmurgel-tg/esphome-components
       # Optional: bestimmter Branch oder Tag, z.B.:
       # ref: main
+    components: [wr3223]
+    refresh: always
 ```
 
 ## Minimalkonfiguration mit alle Sensoren mit Standardwerten:
