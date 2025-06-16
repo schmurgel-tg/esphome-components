@@ -9,7 +9,7 @@ namespace esphome
   namespace wr3223
   {
 
-    enum WR3223EnumStatusSW : char
+    enum WR3223EnumStatusSW : uint8_t
     {
       OFF = 0b00000000,
       HEAT_PUMP_OFF = 0b00000001,

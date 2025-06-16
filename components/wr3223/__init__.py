@@ -21,6 +21,8 @@ WR3223Connector = wr3223_ns.class_("WR3223Connector", cg.Component)
 WR3223ErrorComponent = wr3223_ns.class_("WR3223ErrorComponent", cg.PollingComponent)
 WR3223StatusValueHolder = wr3223_ns.class_("WR3223StatusValueHolder")
 WR3223StatusComponent = wr3223_ns.class_("WR3223StatusComponent", cg.PollingComponent)
+WR3223ModeValueHolder = wr3223_ns.class_("WR3223ModeValueHolder")
+WR3223ModeComponent = wr3223_ns.class_("WR3223ModeComponent", cg.PollingComponent)
 
 
 # Automatisches Laden der Module
@@ -31,11 +33,14 @@ CONF_WR3223_CONNECTOR_ID = "wr3223_connector_id"
 CONF_WR3223_ERROR_COMPONENT_ID = "wr3223_error_component_id"
 CONF_WR3223_STATUS_COMPONENT_ID = "wr3223_status_component_id"
 CONF_WR3223_STATUS_HOLDER_ID = "wr3223_status_holder_id"
+CONF_WR3223_MODE_COMPONENT_ID = "wr3223_mode_component_id"
+CONF_WR3223_MODE_HOLDER_ID = "wr3223_mode_holder_id"
 CONF_DEACTIVATE = "deactivate"
 CONF_ERROR_POLLING = "error_polling"
 CONF_ERROR_STATUS = "error_status_sensor"
 CONF_ERROR_TEXT = "error_text_sensor"
 CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
+CONF_MODE_UPDATE_INTERVAL = "mode_update_interval"
 
 def validate_status_interval(value):
     value = cv.update_interval(value)
@@ -50,7 +55,10 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_WR3223_ERROR_COMPONENT_ID): cv.declare_id(WR3223ErrorComponent),
     cv.GenerateID(CONF_WR3223_STATUS_COMPONENT_ID): cv.declare_id(WR3223StatusComponent),
     cv.GenerateID(CONF_WR3223_STATUS_HOLDER_ID): cv.declare_id(WR3223StatusValueHolder),
+    cv.GenerateID(CONF_WR3223_MODE_COMPONENT_ID): cv.declare_id(WR3223ModeComponent),
+    cv.GenerateID(CONF_WR3223_MODE_HOLDER_ID): cv.declare_id(WR3223ModeValueHolder),
     cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): validate_status_interval,
+    cv.Optional(CONF_MODE_UPDATE_INTERVAL, default="60s"): cv.update_interval,
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
         cv.Optional(CONF_UPDATE_INTERVAL, default="60s"): cv.update_interval,
@@ -91,6 +99,15 @@ async def to_code(config):
         holder,
     )
     await cg.register_component(status_component, {})
+
+    mode_holder = cg.new_Pvariable(config[CONF_WR3223_MODE_HOLDER_ID])
+    mode_component = cg.new_Pvariable(
+        config[CONF_WR3223_MODE_COMPONENT_ID],
+        var,
+        config[CONF_MODE_UPDATE_INTERVAL],
+        mode_holder,
+    )
+    await cg.register_component(mode_component, {})
 
     error_polling = config.get(CONF_ERROR_POLLING)        
     
