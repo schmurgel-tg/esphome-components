@@ -6,8 +6,8 @@ Mit diesem Projekt kannst du eine Hermes WR 3223-basierte Heizungs- bzw. Lüftun
 ### Funktionen im Überblick
 - Abfragen von Temperaturwerten (z.B. Verdampfer, Kondensator, Außenluft etc.)
 - Erfassen und Überwachen diverser Relaiszustände (Kompressor, Bypass, Zusatzheizung etc.)
-- ~~Setzen von Lüfterstufen~~
-- ~~Aktivieren/Deaktivieren von Wärmepumpe und Zusatzheizung~~
+- Setzen von Lüfterstufen
+- Aktivieren/Deaktivieren von Wärmepumpe und Zusatzheizung
 - Auslesen von Fehler- und Statusmeldungen
 - ~~Einstellen der Zuluftsolltemperatur und anderer Parameter~~
 - Komfortable Ansteuerung direkt aus Home Assistant
@@ -31,9 +31,6 @@ external_components:
       url: https://github.com/schmurgel-tg/esphome-components
       # Optional: bestimmter Branch oder Tag, z.B.:
       # ref: main
-    # In vielen Projekten kann man "components" weglassen,
-    # da alle relevanten Dateien eingebunden werden.
-    # components: ["wr3223_controller", "wr3223_sensorConnectors", ... ]
 ```
 
 ## Minimalkonfiguration mit alle Sensoren mit Standardwerten:
