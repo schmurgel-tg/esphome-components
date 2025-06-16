@@ -47,7 +47,7 @@ VENTILATION_LEVEL_SCHEMA = (
 )
 
 MODE_SELECT_SCHEMA = (
-    select.select_schema(WR3223ModeSelect, icon="mdi:alpha-a-circle-outline")
+    select.select_schema(WR3223ModeSelect, icon="mdi:format-list-bulleted")
     .extend(
         {
             cv.Optional(CONF_NAME, default="Betriebsmodus"): cv.string_strict,
