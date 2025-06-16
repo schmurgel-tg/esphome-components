@@ -66,6 +66,9 @@ select:
 
 switch:
   - platform: wr3223
+
+number:
+  - platform: wr3223
 ```
 
 ## Detailkonfiguration
@@ -122,6 +125,22 @@ select:
 ```
 
 # Status-Schalter
+
+Neben dem Dropdown für die Lüftungsstufe können auch die Ventilatorstellwerte
+der einzelnen Stufen über `number`-Slider angepasst werden. Die Werte liegen
+zwischen 40 % und 100 %.
+
+```yaml
+number:
+  - platform: wr3223
+    numbers:
+      vent_level_1_speed:
+        name: "Luftstufe 1 [%]"
+      vent_level_2_speed:
+        name: "Luftstufe 2 [%]"
+      vent_level_3_speed:
+        name: "Luftstufe 3 [%]"
+```
 
 Zusätzlich legt die Komponente drei Schalter an, mit denen sich Wärmepumpe,
 Zusatzheizung und Kühlung ein- oder ausschalten lassen. Bei Bedarf können die

@@ -115,10 +115,6 @@ namespace esphome
       {
         return !(stateValueSW & WR3223EnumStatusSW::COOLING_OFF);
       }
-      // bool isMalfunction() const
-      // {
-      //   return stateValueTa & WR3223EnumStatusTa::MALFUNCTION;
-      // }
       bool getAdditionalHeatingOnStatus() const
       {
         return !(stateValueSW & WR3223EnumStatusSW::ADDITIONAL_HEATING_OFF);
@@ -145,22 +141,9 @@ namespace esphome
         return true;
       }
 
-      // bool setTaStatus(const char *read)
-      // {
-      //   if (read == nullptr)
-      //     return false;
-
-      //   int value = WR3223Helper::to_int(read, true);
-      //   ESP_LOGD("VALUEHOLDER", "setTaStatus: %d", value);
-      //   stateValueTa = value & WR3223EnumStatusTa::STATUS_MASK_TA;
-      //   ESP_LOGD("VALUEHOLDER", "setTaStatus (masked): %d", stateValueTa);
-      //   return true;
-      // }
-
     private:
       ESPPreferenceObject pref_;
       int stateValueSW{0};
-      // int stateValueTa{0};
     };
 
   } // namespace wr3223
