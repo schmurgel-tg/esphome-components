@@ -25,7 +25,8 @@ VENTILATION_LEVEL_SCHEMA = (
     select.select_schema(WR3223VentilationLevelSelect, icon="mdi:fan")
     .extend(
         {
-            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,            
+            cv.Optional(CONF_NAME, default="Lüftungsstufe"): cv.string_strict,            
+            cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,
             cv.Optional(CONF_OPTIONS, default=DEFAULT_OPTIONS): cv.All(
                 cv.ensure_list(cv.string_strict), cv.Length(min=4, max=4)
             ),
@@ -53,8 +54,7 @@ async def to_code(config):
     selects_conf = config.get(CONF_SELECTS, {})
 
     vent_conf = selects_conf.get(CONF_VENTILATION_LEVEL, {})
-    if not vent_conf.get(CONF_DEACTIVATE):
-        vent_conf.setdefault(CONF_NAME, "Lüftungsstufe")
+    if not vent_conf.get(CONF_DEACTIVATE):        
         var = cg.new_Pvariable(
             vent_conf[CONF_ID], parent, status_comp
         )
