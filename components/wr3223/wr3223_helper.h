@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
+#include <cstdlib>
 
 namespace esphome {
 namespace wr3223 {

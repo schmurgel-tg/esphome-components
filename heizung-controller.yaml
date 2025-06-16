@@ -85,4 +85,13 @@ binary_sensor:
         name: "Relais: Bypass"
         entity_category: "config"
 
+select:
+  - platform: wr3223
+
+switch:
+  - platform: wr3223
+
+number:
+  - platform: wr3223
+
 

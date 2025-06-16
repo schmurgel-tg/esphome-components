@@ -6,8 +6,8 @@ Mit diesem Projekt kannst du eine Hermes WR 3223-basierte Heizungs- bzw. Lüftun
 ### Funktionen im Überblick
 - Abfragen von Temperaturwerten (z.B. Verdampfer, Kondensator, Außenluft etc.)
 - Erfassen und Überwachen diverser Relaiszustände (Kompressor, Bypass, Zusatzheizung etc.)
-- ~~Setzen von Lüfterstufen~~
-- ~~Aktivieren/Deaktivieren von Wärmepumpe und Zusatzheizung~~
+- Setzen von Lüfterstufen
+- Aktivieren/Deaktivieren von Wärmepumpe und Zusatzheizung
 - Auslesen von Fehler- und Statusmeldungen
 - ~~Einstellen der Zuluftsolltemperatur und anderer Parameter~~
 - Komfortable Ansteuerung direkt aus Home Assistant
@@ -31,9 +31,6 @@ external_components:
       url: https://github.com/schmurgel-tg/esphome-components
       # Optional: bestimmter Branch oder Tag, z.B.:
       # ref: main
-    # In vielen Projekten kann man "components" weglassen,
-    # da alle relevanten Dateien eingebunden werden.
-    # components: ["wr3223_controller", "wr3223_sensorConnectors", ... ]
 ```
 
 ## Minimalkonfiguration mit alle Sensoren mit Standardwerten:
@@ -59,6 +56,15 @@ sensor:
   - platform: wr3223
 
 binary_sensor:
+  - platform: wr3223
+
+select:
+  - platform: wr3223
+
+switch:
+  - platform: wr3223
+
+number:
   - platform: wr3223
 ```
 
@@ -96,6 +102,61 @@ binary_sensor:
       bypass:
         name: "Relais: Bypass"
         entity_category: "config"
+```
+Abweichend von älteren Versionen besitzen die Relais ohne weitere Angabe keine
+`device_class` mehr und erscheinen damit als einfache An/Aus-Sensoren
+("Aktiv"/"Aus").
+
+
+# Lüftungsstufe konfigurieren
+
+Die WR3223-Komponente erstellt standardmäßig ein `select` zur Wahl der Lüftungsstufe. 
+Die vier Optionen `AUS`, `Luftstufe 1`, `Luftstufe 2` und `Luftstufe 3` sind bereits vorkonfiguriert. 
+
+Soll das Select angepasst oder ganz abgeschaltet werden, kann dies über den Bereich `selects:` erfolgen:
+
+```yaml
+select:
+  - platform: wr3223
+    selects:
+      ventilation_level:
+        # deactivate: true  # falls das Dropdown nicht benötigt wird
+        options: ["AUS", "1", "2", "3"] # optionales überschreiben der Anzeigwerte der Luftstufen
+        # wird automatisch über die Status-Komponente aktualisiert -> kein UpdateIntervall
+```
+
+# Status-Schalter
+
+Neben dem Dropdown für die Lüftungsstufe können auch die Ventilatorstellwerte
+der einzelnen Stufen über `number`-Slider angepasst werden. Die Werte liegen
+zwischen 40 % und 100 %.
+
+```yaml
+number:
+  - platform: wr3223
+    numbers:
+      vent_level_1_speed:
+        name: "Luftstufe 1 [%]"
+      vent_level_2_speed:
+        name: "Luftstufe 2 [%]"
+      vent_level_3_speed:
+        name: "Luftstufe 3 [%]"
+```
+
+Zusätzlich legt die Komponente drei Schalter an, mit denen sich Wärmepumpe,
+Zusatzheizung und Kühlung ein- oder ausschalten lassen. Bei Bedarf können die
+Schalter deaktiviert werden:
+
+```yaml
+switch:
+  - platform: wr3223
+    switches:
+      heat_pump:
+        # deactivate: true
+      additional_heating:
+        # deactivate: true
+      cooling:
+        # deactivate: true
 ```
 
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  
