@@ -106,6 +106,10 @@ binary_sensor:
         name: "Relais: Bypass"
         entity_category: "config"
 ```
+Abweichend von älteren Versionen besitzen die Relais ohne weitere Angabe keine
+`device_class` mehr und erscheinen damit als einfache An/Aus-Sensoren
+("Aktiv"/"Aus").
+
 
 # Lüftungsstufe konfigurieren
 
