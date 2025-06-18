@@ -1,7 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
-#include "wr3223.h"
+#include "wr3223_connector.h"
 #include "wr3223_constants.h"
 #include <map>
 #include "esphome/components/binary_sensor/binary_sensor.h"
@@ -14,8 +14,8 @@ namespace esphome
     class WR3223RelaisComponent : public PollingComponent
     {
     public:
-      WR3223RelaisComponent(WR3223 *parent, uint32_t update_interval)
-          : PollingComponent(update_interval), parent_(parent) {}
+      WR3223RelaisComponent(WR3223Connector *connector, uint32_t update_interval)
+          : PollingComponent(update_interval), connector_(connector) {}
 
       void setup() override;
       void update() override;
@@ -25,7 +25,7 @@ namespace esphome
       bool is_bedienteil_aktiv() const { return bedienteil_aktiv_; }
 
     private:
-      WR3223 *parent_;
+      WR3223Connector *connector_;
       void process_response(char *response);
       std::map<int, binary_sensor::BinarySensor *> relais_sensors_;
       bool bedienteil_aktiv_{true};

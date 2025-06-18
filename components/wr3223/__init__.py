@@ -101,7 +101,7 @@ async def to_code(config):
     # Relais component wird nun immer gebaut, damit andere module das nutzen koennen
     relais_component = cg.new_Pvariable(
         config[CONF_WR3223_RELAIS_COMPONENT_ID],
-        var,
+        connector,
         config[CONF_RELAIS_UPDATE_INTERVAL],
     )
     await cg.register_component(relais_component, {})

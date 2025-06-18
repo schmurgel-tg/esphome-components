@@ -15,13 +15,13 @@ namespace esphome
 
     void WR3223RelaisComponent::update()
     {
-      if (!this->parent_)
+      if (!this->connector_)
       {
         ESP_LOGE(TAG, "Kein gültiger WR3223-Connector gefunden!");
         return;
       }
 
-      this->parent_->connector_->send_request(WR3223Commands::RL, [this](char *response, bool success)
+      this->connector_->send_request(WR3223Commands::RL, [this](char *response, bool success)
                                               {
       if (success)
           this->process_response(response);
