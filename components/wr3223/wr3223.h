@@ -3,13 +3,14 @@
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "wr3223_connector.h"
-#include "wr3223_relais_component.h"
 #include <vector>
 
 namespace esphome
 {
     namespace wr3223
     {
+
+        class WR3223RelaisComponent; // forward declaration
 
         class WR3223StartUpListener
         {
@@ -37,7 +38,7 @@ namespace esphome
             bool is_bedienteil_aktiv();
 
             /// @brief liefert ob der Statup Prozess abgeschlossen wurde
-            /// @return 
+            /// @return
             bool is_startup_completed() { return fresh_start_ == false; }
 
             WR3223Connector *connector_{nullptr};

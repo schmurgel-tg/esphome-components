@@ -1,4 +1,5 @@
 #include "wr3223_relais_component.h"
+#include "wr3223.h"
 #include "esphome/core/log.h"
 
 namespace esphome
@@ -15,18 +16,21 @@ namespace esphome
 
     void WR3223RelaisComponent::update()
     {
-      if (!this->connector_)
+      if (parent_ == nullptr || parent_->connector_ == nullptr)
       {
         ESP_LOGE(TAG, "Kein gültiger WR3223-Connector gefunden!");
         return;
       }
 
-      this->connector_->send_request(WR3223Commands::RL, [this](char *response, bool success)
-                                              {
-      if (success)
-          this->process_response(response);
-      else
-          ESP_LOGW(TAG, "Relais Kommando Timeout"); });
+      parent_->connector_->send_request(
+          WR3223Commands::RL,
+          [this](char *response, bool success)
+          {
+            if (success)
+              this->process_response(response);
+            else
+              ESP_LOGW(TAG, "Relais Kommando Timeout");
+          });
 
       ESP_LOGD(TAG, "Relais-Status-Anfrage gesendet.");
     }
@@ -55,6 +59,9 @@ namespace esphome
         bool state = (relais_status & flag) != 0;
         sensor->publish_state(state);
       }
+
+      if (parent_ != nullptr)
+        parent_->on_relais_update();
     }
 
     void WR3223RelaisComponent::register_relais_sensor(

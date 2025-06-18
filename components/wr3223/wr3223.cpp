@@ -1,4 +1,5 @@
 #include "wr3223.h"
+#include "wr3223_relais_component.h"
 #include "esphome/core/log.h"
 
 namespace esphome
