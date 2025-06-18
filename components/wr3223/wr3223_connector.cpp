@@ -13,9 +13,6 @@ namespace esphome
     /// @brief Gibt an, ob ein frischer Start nach einem Stromausfall erfolgt
     bool freshStart = true;
 
-    /// @brief Wird über den RelaisDecoder aktualisiert
-    bool bedienteilAktiv = true;
-
     static std::string bytes_to_hex(const uint8_t *data, size_t len)
     {
       char buf[4];
@@ -313,7 +310,7 @@ namespace esphome
           // aufrufen koennen
           auto cb = req.second.callback;
           it = request_map_.erase(it);
-          
+
           if (cb)
             cb((char *)"", false);
 

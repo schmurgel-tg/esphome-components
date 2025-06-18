@@ -44,8 +44,8 @@ namespace esphome
       int relais_status = std::stoi(response); // Direkt die Datenbits als Integer interpretieren
       ESP_LOGD(TAG, "Erhaltener Relais-Status: %d", relais_status);
 
-      // update global flag for 'bedienteil aktiv'
-      bedienteilAktiv = (relais_status & 64) != 0;
+      // update flag for 'bedienteil aktiv'
+      bedienteil_aktiv_ = (relais_status & 64) != 0;
 
       // Sensoren anhand der Bit-Flags setzen
       for (auto it = relais_sensors_.begin(); it != relais_sensors_.end(); ++it)

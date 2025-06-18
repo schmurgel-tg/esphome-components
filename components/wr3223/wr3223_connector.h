@@ -10,13 +10,6 @@ namespace esphome
 {
   namespace wr3223
   {
-
-    /// @brief nach einem stromausfall oder ähnlichem, verhalten wir uns anders im
-    /// ersten Update
-    extern bool freshStart;
-    /// @brief Wird über den RelaisDecoder aktualisiert
-    extern bool bedienteilAktiv;
-
     class WR3223Connector : public Component, public uart::UARTDevice
     {
     public:

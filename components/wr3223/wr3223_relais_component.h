@@ -22,10 +22,13 @@ namespace esphome
 
       void register_relais_sensor(int flag, binary_sensor::BinarySensor *sensor);
 
+      bool is_bedienteil_aktiv() const { return bedienteil_aktiv_; }
+
     private:
       WR3223 *parent_;
       void process_response(char *response);
       std::map<int, binary_sensor::BinarySensor *> relais_sensors_;
+      bool bedienteil_aktiv_{true};
     };
 
   } // namespace wr3223

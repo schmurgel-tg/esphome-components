@@ -28,7 +28,7 @@ namespace esphome
                 holder_ == nullptr)
                 return;
 
-            if (bedienteilAktiv)
+            if (parent_->is_bedienteil_aktiv())
             {
                 ESP_LOGW(TAG, "Bedienteil aktiv - Schreiben nicht moeglich, lese Status.");
                 parent_->connector_->send_request(
