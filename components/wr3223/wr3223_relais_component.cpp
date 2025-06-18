@@ -1,4 +1,5 @@
 #include "wr3223_relais_component.h"
+#include "wr3223.h"
 #include "esphome/core/log.h"
 
 namespace esphome
@@ -15,18 +16,21 @@ namespace esphome
 
     void WR3223RelaisComponent::update()
     {
-      if (!this->parent_)
+      if (parent_ == nullptr || parent_->connector_ == nullptr)
       {
         ESP_LOGE(TAG, "Kein gültiger WR3223-Connector gefunden!");
         return;
       }
 
-      this->parent_->connector_->send_request(WR3223Commands::RL, [this](char *response, bool success)
-                                              {
-      if (success)
-          this->process_response(response);
-      else
-          ESP_LOGW(TAG, "Relais Kommando Timeout"); });
+      parent_->connector_->send_request(
+          WR3223Commands::RL,
+          [this](char *response, bool success)
+          {
+            if (success)
+              this->process_response(response);
+            else
+              ESP_LOGW(TAG, "Relais Kommando Timeout");
+          });
 
       ESP_LOGD(TAG, "Relais-Status-Anfrage gesendet.");
     }
@@ -44,8 +48,8 @@ namespace esphome
       int relais_status = std::stoi(response); // Direkt die Datenbits als Integer interpretieren
       ESP_LOGD(TAG, "Erhaltener Relais-Status: %d", relais_status);
 
-      // update global flag for 'bedienteil aktiv'
-      bedienteilAktiv = (relais_status & 64) != 0;
+      // update flag for 'bedienteil aktiv'
+      bedienteil_aktiv_ = (relais_status & 64) != 0;
 
       // Sensoren anhand der Bit-Flags setzen
       for (auto it = relais_sensors_.begin(); it != relais_sensors_.end(); ++it)
@@ -55,6 +59,9 @@ namespace esphome
         bool state = (relais_status & flag) != 0;
         sensor->publish_state(state);
       }
+
+      if (parent_ != nullptr)
+        parent_->on_relais_update();
     }
 
     void WR3223RelaisComponent::register_relais_sensor(

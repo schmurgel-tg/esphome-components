@@ -16,7 +16,7 @@ namespace esphome
             virtual void on_status(WR3223StatusValueHolder *holder) = 0;
         };
 
-        class WR3223StatusComponent : public PollingComponent
+        class WR3223StatusComponent : public PollingComponent, public WR3223StartUpListener
         {
         public:
             WR3223StatusComponent(WR3223 *parent, uint32_t update_interval,
@@ -25,6 +25,8 @@ namespace esphome
 
             void setup() override;
             void update() override;
+
+            void on_startup() override;
 
             /// @brief Expose the internally used value holder
             WR3223StatusValueHolder *get_holder() const { return holder_; }

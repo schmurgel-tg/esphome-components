@@ -109,10 +109,9 @@ binary_sensor:
         name: "Relais: Bypass"
         entity_category: "config"
 ```
-Abweichend von älteren Versionen besitzen die Relais ohne weitere Angabe keine
-`device_class` mehr und erscheinen damit als einfache An/Aus-Sensoren
-("Aktiv"/"Aus").
-
+Die Relais-Komponente wird unabhängig von diesem Abschnitt automatisch
+erstellt. Hier lassen sich lediglich Sensoren für ausgewählte Relais
+anlegen oder anpassen.
 
 # Lüftungsstufe konfigurieren
 
@@ -167,7 +166,7 @@ switch:
 
 # Speicherung und Wiederherstellung des Betriebszustands
 
-Die `wr3223`-Komponente liest beim Start automatisch den zuletzt gespeicherten Modus sowie den Status der Schalter (z. B. Wärmepumpe, Zusatzheizung, Kühlung) aus dem Flash-Speicher (NVS) und stellt diese wieder her.
+Die `wr3223`-Komponente liest beim Start automatisch den zuletzt gespeicherten Modus sowie den Status der Schalter (z. B. Wärmepumpe, Zusatzheizung, Kühlung) aus dem Flash-Speicher (NVS) und stellt diese wieder her. Die Relais-Komponente führt unmittelbar ein erstes Update durch und informiert die übrigen Module über den aktuellen Zustand. Sobald `bedienteil_aktiv` auf `false` gewechselt ist, schreiben Status- und Mode-Komponente ihre gespeicherten Werte einmalig an die Anlage, andernfalls lesen sie die aktuellen Werte ein. Anschließend endet der *fresh start* und das System läuft im Normalbetrieb weiter.
 
 Damit Änderungen auch nach einem Stromausfall oder Neustart erhalten bleiben, müssen sie explizit gespeichert werden. Hierfür stehen zwei Buttons zur Verfügung:
 
@@ -189,7 +188,7 @@ button:
         icon: mdi:restore
 ```
 
-**Hinweis:** Einstellungen wie individuelle Lüfterstufen-Drehzahlen oder andere "number"-Werte werden nicht gespeichert.
+**Hinweis:** Einstellungen wie individuelle Lüfterstufen-Drehzahlen oder andere "number"-Werte von der Anlage selbst gespeichert.
 
 
 ![Alternativtext](https://github.com/schmurgel-tg/esphome/blob/main/images/20230101_174032.jpg) "Anschlussbeispiel")  

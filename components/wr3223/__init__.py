@@ -23,6 +23,7 @@ WR3223StatusValueHolder = wr3223_ns.class_("WR3223StatusValueHolder")
 WR3223StatusComponent = wr3223_ns.class_("WR3223StatusComponent", cg.PollingComponent)
 WR3223ModeValueHolder = wr3223_ns.class_("WR3223ModeValueHolder")
 WR3223ModeComponent = wr3223_ns.class_("WR3223ModeComponent", cg.PollingComponent)
+WR3223RelaisComponent = wr3223_ns.class_("WR3223RelaisComponent", cg.PollingComponent)
 
 
 # Automatisches Laden der Module
@@ -42,6 +43,7 @@ CONF_ERROR_STATUS = "error_status_sensor"
 CONF_ERROR_TEXT = "error_text_sensor"
 CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
 CONF_MODE_UPDATE_INTERVAL = "mode_update_interval"
+CONF_RELAIS_UPDATE_INTERVAL = "relais_update_interval"
 
 def validate_status_interval(value):
     value = cv.update_interval(value)
@@ -58,8 +60,10 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(CONF_WR3223_STATUS_HOLDER_ID): cv.declare_id(WR3223StatusValueHolder),
     cv.GenerateID(CONF_WR3223_MODE_COMPONENT_ID): cv.declare_id(WR3223ModeComponent),
     cv.GenerateID(CONF_WR3223_MODE_HOLDER_ID): cv.declare_id(WR3223ModeValueHolder),
+    cv.GenerateID(CONF_WR3223_RELAIS_COMPONENT_ID): cv.declare_id(WR3223RelaisComponent),
     cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): validate_status_interval,
     cv.Optional(CONF_MODE_UPDATE_INTERVAL, default="60s"): cv.update_interval,
+    cv.Optional(CONF_RELAIS_UPDATE_INTERVAL, default="60s"): cv.update_interval,
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
         cv.Optional(CONF_UPDATE_INTERVAL, default="60s"): cv.update_interval,
@@ -87,10 +91,21 @@ async def to_code(config):
     await cg.register_component(var, config)
 
     # WR3223Connector als eigene Komponente registrieren
-    connector = cg.new_Pvariable(config[CONF_WR3223_CONNECTOR_ID], await cg.get_variable(config[CONF_UART_ID]))
-    cg.add(var.set_connector(connector))  # Verbinde den Connector mit WR3223
-    
+    connector = cg.new_Pvariable(
+        config[CONF_WR3223_CONNECTOR_ID], 
+        await cg.get_variable(config[CONF_UART_ID])
+    )    
     await cg.register_component(connector, {})
+    cg.add(var.set_connector(connector))  # Verbinde den Connector mit WR3223    
+
+    # Relais component wird nun immer gebaut, damit andere module das nutzen koennen
+    relais_component = cg.new_Pvariable(
+        config[CONF_WR3223_RELAIS_COMPONENT_ID],
+        var,
+        config[CONF_RELAIS_UPDATE_INTERVAL],
+    )
+    await cg.register_component(relais_component, {})
+    cg.add(var.set_relais_component(relais_component)) # Verbinde die RelaisComponent mit WR3223
 
     holder = cg.new_Pvariable(config[CONF_WR3223_STATUS_HOLDER_ID])
     status_component = cg.new_Pvariable(
@@ -109,6 +124,8 @@ async def to_code(config):
         mode_holder,
     )
     await cg.register_component(mode_component, {})
+
+    
 
     error_polling = config.get(CONF_ERROR_POLLING)        
     
