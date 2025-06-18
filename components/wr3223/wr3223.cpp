@@ -5,7 +5,6 @@ namespace esphome
 {
     namespace wr3223
     {
-
         static const char *const TAG = "wr3223";
 
         void WR3223::setup()
@@ -14,8 +13,12 @@ namespace esphome
         }
 
         void WR3223::update()
-        {
-            ESP_LOGI(TAG, "WR3223 Hauptkomponente Update ausgeführt!");
+        {                        
+            if (fresh_start_ && relais_component_ != nullptr)
+            {
+                ESP_LOGI(TAG, "WR3223 Hauptkomponente FreshStart im Update wird ausgeführt!");
+                relais_component_->update();                
+            }
         }
 
         void WR3223::dump_config()
@@ -34,6 +37,20 @@ namespace esphome
         {
             this->relais_component_ = relais_component;
             ESP_LOGD("WR3223", "WR3223RelaisComponent wurde erfolgreich gesetzt.");
+        }
+
+        void WR3223::on_relais_update()
+        {
+            if (fresh_start_)
+            {
+                ESP_LOGD(TAG, "Fresh start completed - notifying listeners");
+                for (auto *listener : startup_listeners_)
+                {
+                    if (listener != nullptr)
+                        listener->on_startup();
+                }
+                fresh_start_ = false;
+            }
         }
 
         bool WR3223::is_bedienteil_aktiv()

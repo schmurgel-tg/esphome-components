@@ -17,7 +17,7 @@ namespace esphome
             virtual void on_mode(WR3223ModeValueHolder *holder) = 0;
         };
 
-        class WR3223ModeComponent : public PollingComponent
+        class WR3223ModeComponent : public PollingComponent, public WR3223StartUpListener
         {
         public:
             WR3223ModeComponent(WR3223 *parent, uint32_t update_interval,
@@ -26,6 +26,8 @@ namespace esphome
 
             void setup() override;
             void update() override;
+
+            void on_startup() override;
 
             WR3223ModeValueHolder *get_holder() const { return holder_; }
 

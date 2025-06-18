@@ -12,15 +12,31 @@ namespace esphome
 
         void WR3223ModeComponent::setup()
         {
+            if (parent_ != nullptr)
+                parent_->register_startup_listener(this);
+
             if (holder_ != nullptr)
-            {
                 holder_->restore_state();
-            }
+
             notify_controls();
-            write_mode();
         }
 
-        void WR3223ModeComponent::update() { write_mode(); }
+        void WR3223ModeComponent::update()
+        {
+            // mit den regulären Updates warten wir bis das Startup abgeschlossen wurde
+            if (parent_->is_startup_completed())
+                write_mode();
+        }
+
+        void WR3223ModeComponent::on_startup()
+        {
+            if (holder_ != nullptr && !parent_->is_bedienteil_aktiv())
+            {
+                holder_->restore_state();
+                notify_controls();
+                write_mode();
+            }
+        }
 
         void WR3223ModeComponent::write_mode()
         {
