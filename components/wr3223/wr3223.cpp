@@ -28,28 +28,28 @@ namespace esphome
             ESP_LOGCONFIG(TAG, "  - Update Intervall: %d ms", this->get_update_interval());
         }
 
-        void WR3223::set_connector(WR3223Connector *connector)
-        {
-            this->connector_ = connector;
-            ESP_LOGD("WR3223", "WR3223Connector wurde erfolgreich gesetzt.");
-        }
-
-        void WR3223::set_relais_component(WR3223RelaisComponent *relais_component)
-        {
-            this->relais_component_ = relais_component;
-            ESP_LOGD("WR3223", "WR3223RelaisComponent wurde erfolgreich gesetzt.");
-        }
-
         void WR3223::on_relais_update()
         {
-            if (fresh_start_)
+            if (!fresh_start_)
+                return;
+
+            startup_counter_++;
+            bool bd_active = is_bedienteil_aktiv();
+            ESP_LOGD(TAG, "Relais update %u/%u bedienteil=%d", startup_counter_, max_restore_attempts_, bd_active);
+
+            if (!bd_active)
             {
-                ESP_LOGD(TAG, "Fresh start completed - notifying listeners");
+                ESP_LOGD(TAG, "Startup conditions met - notifying listeners");
                 for (auto *listener : startup_listeners_)
                 {
                     if (listener != nullptr)
                         listener->on_startup();
                 }
+                fresh_start_ = false;
+            }
+            else if (startup_counter_ >= max_restore_attempts_)
+            {
+                ESP_LOGW(TAG, "Startup failed after %u attempts", startup_counter_);
                 fresh_start_ = false;
             }
         }

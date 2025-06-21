@@ -32,9 +32,8 @@ namespace esphome
         {
             if (holder_ != nullptr && !parent_->is_bedienteil_aktiv())
             {
-                holder_->restore_state_sw();
-                notify_controls();
-                write_status();
+                holder_->restore_state_sw();                
+                write_status();                
             }
         }
 

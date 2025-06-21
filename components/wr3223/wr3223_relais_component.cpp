@@ -50,6 +50,7 @@ namespace esphome
 
       // update flag for 'bedienteil aktiv'
       bedienteil_aktiv_ = (relais_status & 64) != 0;
+      ESP_LOGD(TAG, "Bedienteil aktiv: %d", bedienteil_aktiv_);
 
       // Sensoren anhand der Bit-Flags setzen
       for (auto it = relais_sensors_.begin(); it != relais_sensors_.end(); ++it)

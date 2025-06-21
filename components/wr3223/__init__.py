@@ -44,6 +44,7 @@ CONF_ERROR_TEXT = "error_text_sensor"
 CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
 CONF_MODE_UPDATE_INTERVAL = "mode_update_interval"
 CONF_RELAIS_UPDATE_INTERVAL = "relais_update_interval"
+CONF_RESTORE_ATTEMPTS = "restore_attempts"
 
 def validate_status_interval(value):
     value = cv.update_interval(value)
@@ -64,6 +65,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default="10s"): validate_status_interval,
     cv.Optional(CONF_MODE_UPDATE_INTERVAL, default="60s"): cv.update_interval,
     cv.Optional(CONF_RELAIS_UPDATE_INTERVAL, default="60s"): cv.update_interval,
+     cv.Optional(CONF_RESTORE_ATTEMPTS, default=4): cv.int_,
     cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
     cv.Optional(CONF_ERROR_POLLING, default={}): cv.Schema({
         cv.Optional(CONF_UPDATE_INTERVAL, default="60s"): cv.update_interval,
@@ -89,6 +91,7 @@ async def to_code(config):
     # Hauptkomponente erzeugen
     var = cg.new_Pvariable(config[CONF_WR3223_ID], await cg.get_variable(config[CONF_UART_ID]))    
     await cg.register_component(var, config)
+    cg.add(var.set_max_restore_attempts(config.get(CONF_RESTORE_ATTEMPTS, 4)))
 
     # WR3223Connector als eigene Komponente registrieren
     connector = cg.new_Pvariable(

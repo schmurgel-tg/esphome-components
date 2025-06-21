@@ -28,12 +28,14 @@ namespace esphome
             void update() override;
             void dump_config() override;
 
-            void set_connector(WR3223Connector *connector);
-            void set_relais_component(WR3223RelaisComponent *component);
+            void set_connector(WR3223Connector *connector) { connector_ = connector; }
+            void set_relais_component(WR3223RelaisComponent *component) { relais_component_ = component; }
 
             void register_startup_listener(WR3223StartUpListener *listener) { startup_listeners_.push_back(listener); }
 
             void on_relais_update();
+
+            void set_max_restore_attempts(uint8_t attempts) { max_restore_attempts_ = attempts; }
 
             bool is_bedienteil_aktiv();
 
@@ -48,6 +50,8 @@ namespace esphome
             /// @brief nach einem stromausfall oder ähnlichem, verhalten wir uns anders im
             /// ersten Update
             bool fresh_start_{true};
+            uint8_t startup_counter_{0};
+            uint8_t max_restore_attempts_{4};
             std::vector<WR3223StartUpListener *> startup_listeners_{};
         };
 

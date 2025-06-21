@@ -76,6 +76,16 @@ number:
 
 ## Detailkonfiguration
 ```yaml
+
+#Hauptkomponente
+wr3223:
+  uart_id: uart_bus  
+  # anzahl der Versuche die gespeicherten Mode/Status Werte wiederherzustellen OnStartup 
+  # defaul = 4, wir pro Update (alls 5s) der WR3223 Hauptkomponeten veruscht, 
+  # ein Wiederherstellung kann nur erfolgen, wenn das Bedienteil nicht aktiv ist
+  restore_attempts: 4 
+
+
 # Sensoren
 sensor:
   - platform: wr3223
@@ -166,7 +176,7 @@ switch:
 
 # Speicherung und Wiederherstellung des Betriebszustands
 
-Die `wr3223`-Komponente liest beim Start automatisch den zuletzt gespeicherten Modus sowie den Status der Schalter (z. B. Wärmepumpe, Zusatzheizung, Kühlung) aus dem Flash-Speicher (NVS) und stellt diese wieder her. Die Relais-Komponente führt unmittelbar ein erstes Update durch und informiert die übrigen Module über den aktuellen Zustand. Sobald `bedienteil_aktiv` auf `false` gewechselt ist, schreiben Status- und Mode-Komponente ihre gespeicherten Werte einmalig an die Anlage, andernfalls lesen sie die aktuellen Werte ein. Anschließend endet der *fresh start* und das System läuft im Normalbetrieb weiter.
+Die `wr3223`-Komponente liest beim Start automatisch den zuletzt gespeicherten Modus sowie den Status der Schalter (z. B. Wärmepumpe, Zusatzheizung, Kühlung) aus dem Flash-Speicher (NVS) und stellt diese wieder her. Solange der Sensor `Bedienteil aktiv` auf `true` steht, wird alle fünf Sekunden ein Relais‑Update angestoßen. Sind nach einer frei wählbaren Anzahl von Versuchen (Standard: vier) noch immer Schreibrechte gesperrt, wird der Startvorgang abgebrochen. Sobald `bedienteil_aktiv` auf `false` wechselt, schreiben Status- und Mode-Komponente ihre gespeicherten Werte einmalig an die Anlage und der *fresh start* endet.
 
 Damit Änderungen auch nach einem Stromausfall oder Neustart erhalten bleiben, müssen sie explizit gespeichert werden. Hierfür stehen zwei Buttons zur Verfügung:
 
