@@ -10,20 +10,22 @@ namespace esphome
     namespace wr3223
     {
 
-        class WR3223VentSpeedNumber : public number::Number, public Component
+        class WR3223NumberControl : public number::Number, public Component
         {
         public:
-            WR3223VentSpeedNumber(WR3223 *parent, int level) : parent_(parent), level_(level) {}
+            WR3223NumberControl(WR3223 *parent, int level);
+            WR3223NumberControl(WR3223 *parent, const char *command, bool use_float = false)
+                : parent_(parent), command_(command), use_float_(use_float) {}
 
             void setup() override;
             float get_setup_priority() const override { return setup_priority::DATA; }
 
         protected:
-            void control(float value) override;
-            const char *get_command() const;
+            void control(float value) override;            
 
             WR3223 *parent_;
-            int level_;
+            const char *command_;
+            bool use_float_;
         };
 
     } // namespace wr3223
