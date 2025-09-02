@@ -79,7 +79,6 @@ CONFIG_SCHEMA = cv.Schema(
                         ): sensor.validate_device_class,
                     }
                 )
-                .extend(sensor.SENSOR_SCHEMA)
                 .extend(cv.polling_component_schema("60s"))
                 for k in SENSOR_COMMANDS.keys()
             }
