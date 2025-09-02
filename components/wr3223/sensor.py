@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor
+from esphome.components import sensor as sensor_comp
 from esphome.const import (
     UNIT_CELSIUS,
     DEVICE_CLASS_TEMPERATURE,
@@ -54,11 +54,11 @@ def validate_custom_command(value):
 
 # **Definition der einzelnen Temperatur-Sensoren**
 CONFIG_SCHEMA = (
-    sensor.sensor_schema()
+    sensor_comp.sensor_schema()
     .extend(
         {
             # Default Id setzen, damit YAML nichts angeben muss:
-            cv.Optional(CONF_ID, default="wr3223_sensor"): cv.declare_id(sensor.Sensor),
+            cv.Optional(CONF_ID, default="wr3223_sensor"): cv.declare_id(sensor_comp.Sensor),
 
             cv.GenerateID(CONF_WR3223_ID): cv.use_id(WR3223),
 
@@ -82,7 +82,7 @@ CONFIG_SCHEMA = (
             ),
             # **Benutzerdefinierte Sensoren (MÜSSEN genau 2 Zeichen haben + Pflichtfelder)**
             cv.Optional(CONF_SENSORS_CUSTOM, default=[]): cv.ensure_list(
-                sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT)
+                sensor_comp.sensor_schema(state_class=STATE_CLASS_MEASUREMENT)
                 .extend(
                     {
                         cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(
@@ -94,8 +94,8 @@ CONFIG_SCHEMA = (
                         cv.Required(CONF_NAME): cv._validate_entity_name,
                         cv.Optional(
                             CONF_UNIT_OF_MEASUREMENT
-                        ): sensor.validate_unit_of_measurement,
-                        cv.Optional(CONF_DEVICE_CLASS): sensor.validate_device_class,
+                        ): sensor_comp.validate_unit_of_measurement,
+                        cv.Optional(CONF_DEVICE_CLASS): sensor_comp.validate_device_class,
                     }
                 )
                 .extend(cv.polling_component_schema("60s")),
