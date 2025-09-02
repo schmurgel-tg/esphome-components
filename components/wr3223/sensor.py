@@ -9,7 +9,7 @@ from esphome.const import (
     CONF_DEVICE_CLASS,
     CONF_NAME,
     CONF_SENSORS,
-    CONF_STATE_CLASS,
+    CONF_FRIENDLY_NAME,
     CONF_UPDATE_INTERVAL,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_ACCURACY_DECIMALS,
@@ -19,9 +19,7 @@ from esphome.const import (
 from . import WR3223, CONF_WR3223_ID, CONF_DEACTIVATE, wr3223_ns
 
 # Sensor-Polling-Komponente (für alle Sensoren)
-WR3223SensorPollingComponent = wr3223_ns.class_(
-    "WR3223SensorPollingComponent", cg.PollingComponent
-)
+WR3223SensorPollingComponent = wr3223_ns.class_("WR3223SensorPollingComponent", cg.PollingComponent)
 
 # Liste der unterstützten Sensor-Kommandos mit ihren Standardwerten
 SENSOR_COMMANDS = {
@@ -46,9 +44,7 @@ def validate_custom_command(value):
     """Validiert, dass benutzerdefinierte Kommandos genau 2 Zeichen haben."""
     value = cv.string(value)
     if not (len(value) == 2 and value.isalnum()):
-        raise cv.Invalid(
-            f"Custom command '{value}' must be exactly two alphanumeric characters long."
-        )
+        raise cv.Invalid(f"Custom command '{value}' must be exactly two alphanumeric characters long.")
     return value
 
 
@@ -62,21 +58,11 @@ CONFIG_SCHEMA = cv.Schema(
                 cv.Optional(k, default={}): sensor.sensor_schema()
                 .extend(
                     {
-                        cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(
-                            WR3223SensorPollingComponent
-                        ),
-                        cv.Optional(
-                            CONF_DEACTIVATE, default=False
-                        ): cv.boolean,  # Sensor deaktivieren
-                        cv.Optional(
-                            CONF_NAME, default=SENSOR_COMMANDS[k][0]
-                        ): cv._validate_entity_name,
-                        cv.Optional(
-                            CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]
-                        ): sensor.validate_unit_of_measurement,
-                        cv.Optional(
-                            CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]
-                        ): sensor.validate_device_class,
+                        cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
+                        cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
+                        cv.Optional(CONF_NAME, default=SENSOR_COMMANDS[k][0]): cv._validate_entity_name,
+                        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]): sensor.validate_unit_of_measurement,
+                        cv.Optional(CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]): sensor.validate_device_class,
                     }
                 )
                 .extend(cv.polling_component_schema("60s"))
@@ -88,16 +74,10 @@ CONFIG_SCHEMA = cv.Schema(
             sensor.sensor_schema(state_class=STATE_CLASS_MEASUREMENT)
             .extend(
                 {
-                    cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(
-                        WR3223SensorPollingComponent
-                    ),
-                    cv.Required(CONF_COMMAND): cv.All(
-                        cv.string, validate_custom_command
-                    ),
+                    cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
+                    cv.Required(CONF_COMMAND): cv.All(cv.string, validate_custom_command),
                     cv.Required(CONF_NAME): cv._validate_entity_name,
-                    cv.Optional(
-                        CONF_UNIT_OF_MEASUREMENT
-                    ): sensor.validate_unit_of_measurement,
+                    cv.Optional(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
                     cv.Optional(CONF_DEVICE_CLASS): sensor.validate_device_class,
                 }
             )
