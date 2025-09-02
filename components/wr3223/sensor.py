@@ -75,7 +75,7 @@ CONFIG_SCHEMA = (
                             ): cv.boolean,  # Sensor deaktivieren
                         }
                     )
-                    .extend(sensor.SENSOR_SCHEMA)
+                    .extend(sensor_comp.SENSOR_SCHEMA)
                     .extend(cv.polling_component_schema("60s"))
                     for k in SENSOR_COMMANDS.keys()
                 }
@@ -111,7 +111,7 @@ async def generate_sensor_code(parent, sensor_config):
 
     command = sensor_config[CONF_COMMAND]
 
-    sens = await sensor.new_sensor(sensor_config)
+    sens = await sensor_comp.new_sensor(sensor_config)
 
     var = cg.new_Pvariable(
         sensor_config[CONF_SENSOR_POLLING_COMPONENT_ID],
