@@ -19,31 +19,26 @@ WR3223RelaisComponent = wr3223_ns.class_("WR3223RelaisComponent", cg.PollingComp
 
 CONF_RELAIS_SENSORS = "relais_sensors"
 
-# Standard-Device-Class aller Relais (None = generisches boolesches Verhalten)
-DEFAULT_RELAIS_DEVICE_CLASS = None
-
 # Definition der möglichen Relais als Tuple (Name, Default Device Class, Bit-Flag)
 RELAIS_OPTIONS = {
-    "kompressor": ("Kompressor", DEFAULT_RELAIS_DEVICE_CLASS, 1),
-    "zusatzheizung": ("Zusatzheizung", DEFAULT_RELAIS_DEVICE_CLASS, 2),
-    "erdwaermetauscher": ("Erdwärmetauscher", DEFAULT_RELAIS_DEVICE_CLASS, 4),
-    "bypass": ("Bypass", DEFAULT_RELAIS_DEVICE_CLASS, 8),
-    "vorheizregister": ("Vorheizregister", DEFAULT_RELAIS_DEVICE_CLASS, 16),
-    "netzrelais_bypass": ("Netzrelais Bypass", DEFAULT_RELAIS_DEVICE_CLASS, 32),
-    "bedienteil_aktiv": ("Bedienteil aktiv", DEFAULT_RELAIS_DEVICE_CLASS, 64),
+    "kompressor": ("Kompressor", 1),
+    "zusatzheizung": ("Zusatzheizung", 2),
+    "erdwaermetauscher": ("Erdwärmetauscher", 4),
+    "bypass": ("Bypass", 8),
+    "vorheizregister": ("Vorheizregister", 16),
+    "netzrelais_bypass": ("Netzrelais Bypass", 32),
+    "bedienteil_aktiv": ("Bedienteil aktiv", 64),
     "bedienung_via_rs": (
         "Bedienung via RS-Schnittstelle",
-        DEFAULT_RELAIS_DEVICE_CLASS,
         128,
     ),
-    "luftstufe_vorhanden": ("Luftstufe Vorhanden", DEFAULT_RELAIS_DEVICE_CLASS, 256),
+    "luftstufe_vorhanden": ("Luftstufe Vorhanden", 256),
     "ww_nachheizregister": (
         "Warmwasser Nachheizregister",
-        DEFAULT_RELAIS_DEVICE_CLASS,
         512,
     ),
-    "magnetventil": ("Magnetventil", DEFAULT_RELAIS_DEVICE_CLASS, 2048),
-    "vorheizen_aktiv": ("Vorheizen aktiv", DEFAULT_RELAIS_DEVICE_CLASS, 4096),
+    "magnetventil": ("Magnetventil", 2048),
+    "vorheizen_aktiv": ("Vorheizen aktiv", 4096),
 }
 
 # Hauptschema für die Komponente
@@ -56,7 +51,6 @@ CONFIG_SCHEMA = cv.Schema(
                     {
                         cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Option zum Deaktivieren
                         cv.Optional(CONF_NAME, default=RELAIS_OPTIONS[k][0]): cv._validate_entity_name,
-                        cv.Optional(CONF_DEVICE_CLASS, default=RELAIS_OPTIONS[k][1]): binary_sensor.validate_device_class,
                     }
                 )
                 for k in RELAIS_OPTIONS.keys()
@@ -74,12 +68,12 @@ async def to_code(config):
     relais_sensors = config.get(CONF_RELAIS_SENSORS, {})
 
     # Alle Relais aus RELAIS_OPTIONS durchgehen
-    for key, (default_name, default_class, bit_flag) in RELAIS_OPTIONS.items():
+    for key, (default_name, bit_flag) in RELAIS_OPTIONS.items():
         sensor_config = relais_sensors.get(key, {})  # Holt das Relais aus der YAML oder gibt `{}` zurück
 
         # Falls `skip: true`, den Sensor nicht erstellen
         if sensor_config.get(CONF_DEACTIVATE, False):
-            continue        
+            continue
         # Falls keine `entity_category:` existiert, Standardwert setzen
         sensor_config.setdefault(CONF_ENTITY_CATEGORY, cv.entity_category(ENTITY_CATEGORY_DIAGNOSTIC))
 
