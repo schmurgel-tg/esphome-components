@@ -67,55 +67,60 @@ namespace esphome
 
       while (millis() - start_time < 500)
       { // Timeout nach 500ms
-        if (!available())
-        {
+
+        int avail = available();
+        if (avail <= 0)
           continue; // Warten, bis Daten verfügbar sind
-        }
 
-        int readch = read();
-
-        if (readch < 0)
-        {
+        int ch = read();
+        if (ch < 0)
           continue; // Falls kein gültiges Zeichen, nochmal versuchen
-        }
-
-        // ESP_LOGD(TAG, "Empfangen: Zeichen [%d]: 0x%02X", pos, readch); //
-        // Debugging
 
         if (!start_detected)
         {
-          if (readch == MessageControl::STX)
+          if (ch == MessageControl::STX)
           {
             start_detected = true;
-            buffer[pos++] = readch; // <STX> speichern
+            if (pos < len - 1)
+              buffer[pos++] = (char)ch; // <STX> speichern
           }
           continue;
         }
 
         // Falls Nachricht zu lang wird, abbrechen
-        if (pos >= len - 2)
-        { // -2 damit noch Platz für \0 ist
+        if (pos >= len - 2) // Platz für ETX+CS+NUL
+        {
           ESP_LOGE(TAG, "Antwort ist zu lang! Abbruch.");
           buffer[pos] = '\0';
           return -1;
         }
 
-        buffer[pos++] = readch;
+        buffer[pos++] = (char)ch;
 
         // Falls wir <ETX> erreichen, lesen wir noch die Checksumme
-        if (readch == MessageControl::ETX)
+        if (ch == MessageControl::ETX)
         {
-          if (!available())
+          // WARTEFENSTER für die Checksumme
+          uint32_t cs_deadline = millis() + 50; // 50ms Zeitfenster
+          while (millis() < cs_deadline)
           {
-            ESP_LOGE(TAG,
-                     "Antwort endet mit <ETX>, aber keine Checksumme gefunden!");
-            buffer[pos] = '\0'; // Nullterminierung
-            return -1;
+            if (available() > 0)
+            {
+              int cs = read();
+              if (cs >= 0)
+              {
+                buffer[pos++] = (char)cs; // Letztes Zeichen = Checksumme
+                buffer[pos] = '\0';       // Null-Terminator für Sicherheit
+                return pos;               // Erfolgreich
+              }
+            }
+            // kurze Luft holen, damit ISR Daten nachschieben kann
+            delay(0);
           }
 
-          buffer[pos++] = read(); // Letztes Zeichen = Checksumme
-          buffer[pos] = '\0';     // Null-Terminator für Sicherheit
-          return pos;             // Erfolgreich
+          ESP_LOGE(TAG, "Antwort endet mit <ETX>, aber keine Checksumme gefunden!");
+          buffer[pos] = '\0'; // Nullterminierung
+          return -1;                  
         }
       }
 
