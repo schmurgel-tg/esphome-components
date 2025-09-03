@@ -66,6 +66,9 @@ switch:
 
 number:
   - platform: wr3223
+
+button:
+  - platform: wr3223
 ```
 
 ## Minimalkonfig Screenshots:
